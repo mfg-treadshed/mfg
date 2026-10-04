@@ -1,1 +1,2295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Employee Induction Checklist</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    background: #f2f4f7;
+    font-family: Arial, sans-serif;
+    color: #222;
+}
+
+.container {
+    max-width: 850px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.10);
+}
+
+/* LOGO */
+
+.logo {
+    display: block;
+    /*max-width: 330px;
+    width: 60%;*/
+    max-width: 800px;
+    width: 100%;
+    height: auto;
+    margin-bottom: 25px;
+}
+
+/* HEADINGS */
+
+h1 {
+    margin: 0 0 5px 0;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.stage-title {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.stage-description {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* PROGRESS BAR */
+
+.progress-container {
+    margin-bottom: 30px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 7px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #111;
+    transition: width 0.3s;
+}
+
+/* PAGE */
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+/* FIELDS */
+
+.field {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+input[type="text"],
+input[type="date"] {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+}
+
+/* CHECKLIST */
+
+.stage-counter {
+    display: inline-block;
+    margin-bottom: 15px;
+    padding: 6px 11px;
+    background: #eee;
+    border-radius: 15px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 15px;
+    margin-bottom: 9px;
+    background: #f5f6f7;
+    border-radius: 7px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.check-item:hover {
+    background: #eeeeee;
+}
+
+.check-item input {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.check-item label {
+    font-weight: normal;
+    margin: 2px 0 0 0;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+/* NAVIGATION */
+
+.navigation {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+button {
+    font-family: Arial, sans-serif;
+}
+
+.back-button,
+.next-button {
+    padding: 14px 25px;
+    border: 0;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.back-button {
+    background: #ddd;
+    color: #222;
+}
+
+.next-button {
+    background: #111;
+    color: white;
+    margin-left: auto;
+}
+
+/* SIGNATURE */
+
+.declaration {
+    background: #f5f6f7;
+    border-left: 4px solid #111;
+    padding: 17px;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.signature-heading {
+    margin-top: 30px;
+}
+
+.signature-box {
+    width: 100%;
+}
+
+canvas {
+    width: 100%;
+    height: 170px;
+    display: block;
+    background: #fff;
+    border: 2px solid #bbb;
+    border-radius: 7px;
+
+    /*
+       Important for signing on Android/iPhone/iPad.
+       Prevents the page from scrolling while drawing.
+    */
+    touch-action: none;
+}
+
+.clear-button {
+    background: #e4e4e4;
+    border: 0;
+    padding: 10px 16px;
+    margin-top: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.new-induction-button {
+    background: #e4e4e4;
+    color: #222;
+    border: 0;
+    padding: 14px 20px;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.complete-button {
+    width: 100%;
+    padding: 17px;
+    margin-top: 35px;
+    border: 0;
+    border-radius: 7px;
+    background: #111;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* MESSAGE */
+
+#message {
+    margin-top: 20px;
+    padding: 15px;
+    display: none;
+    border-radius: 6px;
+    line-height: 1.5;
+}
+
+.error {
+    display: block !important;
+    background: #ffe4e4;
+    color: #a40000;
+}
+
+.success {
+    display: block !important;
+    background: #e4f7e8;
+    color: #146c2e;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    .logo {
+        /*width: 100%;*/
+        width: 100%;
+    }
+
+    h1 {
+        font-size: 25px;
+    }
+
+    .navigation {
+        flex-wrap: wrap;
+    }
+
+    .back-button,
+    .next-button {
+        flex: 1;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- LOGO -->
+
+<img
+    src="logo.png"
+    id="companyLogo"
+    class="logo"
+    alt="Munro Footwear Group">
+
+<h1>Employee Induction Checklist</h1>
+
+<div class="subtitle">
+    Distribution Centre
+</div>
+
+<!-- PROGRESS -->
+
+<div class="progress-container">
+
+    <div class="progress-info">
+
+        <span id="stepName">
+            Employee Details
+        </span>
+
+        <span id="stepNumber">
+            Step 1 of 7
+        </span>
+
+    </div>
+
+    <div class="progress-bar">
+
+        <div
+            class="progress-fill"
+            id="progressFill">
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     PAGE 1 - EMPLOYEE DETAILS
+===================================================== -->
+
+<div class="page active" id="page0">
+
+    <h2 class="stage-title">
+        Employee Details
+    </h2>
+
+    <div class="stage-description">
+        Enter the new starter's induction details.
+    </div>
+
+    <div class="field">
+
+        <label for="employeeName">
+            Employee Name
+        </label>
+
+        <input
+            type="text"
+            id="employeeName"
+            placeholder="Enter employee's full name">
+
+    </div>
+
+    <div class="field">
+
+        <label for="coordinator">
+            Coordinator / Manager
+        </label>
+
+        <input
+            type="text"
+            id="coordinator"
+            placeholder="Enter coordinator or manager name">
+
+    </div>
+
+    <div class="field">
+
+        <label for="inductionDate">
+            Induction Date
+        </label>
+
+        <input
+            type="date"
+            id="inductionDate">
+
+    </div>
+
+    <div class="navigation">
+
+        <button
+            class="new-induction-button"
+            type="button"
+            onclick="startNewInduction()">
+            Start New Induction
+        </button>
+
+        <button
+            class="next-button"
+            type="button"
+            onclick="nextPage()">
+            Start Induction →
+        </button>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     PAGE 2 - STAGE 1
+===================================================== -->
+
+<div class="page" id="page1">
+
+    <h2 class="stage-title">
+        Stage 1 - Introduction
+    </h2>
+
+    <div class="stage-description">
+        Reception and Car Park
+    </div>
+
+    <div
+        class="stage-counter"
+        id="counter1">
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage1">
+        <label>Boots are appropriate, laces done up and ankles covered</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage1">
+        <label>Hi Vis (orange only)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage1">
+        <label>Ear-pods not allowed. Speaker rules</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage1">
+        <label>All hoodies must be down. You can wear a beanie</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage1">
+        <label>Scarves should be secure and not dangle down</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage1">
+        <label>Evacuation rules - muster point (must be physically shown)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage1">
+        <label>Parking on site - E vehicles</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage1">
+        <label>Drop Off Location</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage1">
+        <label>Site access hours - keycard limits out of hours</label>
+    </div>
+
+    <div class="navigation">
+
+        <button
+            class="back-button"
+            type="button"
+            onclick="previousPage()">
+            ← Back
+        </button>
+
+        <button
+            class="next-button"
+            type="button"
+            onclick="nextPage()">
+            Next →
+        </button>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     PAGE 3 - STAGE 2
+===================================================== -->
+
+<div class="page" id="page2">
+
+    <h2 class="stage-title">
+        Stage 2 - Front Building
+    </h2>
+
+    <div class="stage-description">
+        Toilets, Break Room and Smokers Area
+    </div>
+
+    <div
+        class="stage-counter"
+        id="counter2">
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage2">
+        <label>First Aid Room and First Aid locations</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage2">
+        <label>Wellness Room Location and uses</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage2">
+        <label>Toilets</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage2">
+        <label>Clean up after yourself (kitchen/bathrooms)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage2">
+        <label>Kitchen and its facilities</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage2">
+        <label>Pigeon Holes</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage2">
+        <label>Smokers Hub</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage2">
+        <label>Company values addressed (notice board)</label>
+    </div>
+
+    <div class="navigation">
+
+        <button
+            class="back-button"
+            type="button"
+            onclick="previousPage()">
+            ← Back
+        </button>
+
+        <button
+            class="next-button"
+            type="button"
+            onclick="nextPage()">
+            Next →
+        </button>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     PAGE 4 - STAGE 3
+===================================================== -->
+
+<div class="page" id="page3">
+
+    <h2 class="stage-title">
+        Stage 3 - DC Walkthrough
+    </h2>
+
+    <div class="stage-description">
+        All Departments, Canopies and Racking
+    </div>
+
+    <div
+        class="stage-counter"
+        id="counter3">
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>DC Floor Introduction</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>3 meter rule (not negotiable)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Give way to vehicles (3m rule)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Forklift shared zones</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Lockers</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Signing in/out</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Breaks - time, duration and onus on punctuality</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>MHE Room Introduction</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Do not operate an electric Pallet Jack until authorised to do so</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Do NOT ride any mobile equipment (or operate a forklift without prior approval)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Do not attempt to repair equipment</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Travel to and from rear stations</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Web Pack and External Introduction</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Do not enter the "GRID" unless trained to do so</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Ladders (3 point of contact)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Use safety steps - don't over reach</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Web Pick and Receiving Introduction</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Cleaning Stations and Tag Outs</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>B2B Introduction</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>High level Manual Handling (eg knees)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Shared Zones - Forklift and Pedestrians reminder</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Dock Office / Priority Receipt Area Introduction (Do not enter the Dock Office yet)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Putaway and Returns Introductions</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Racking Aisles explained - straps</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Back Stations / Canopy 3 / Cross Dock Introduction</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Canopy 1 Introduction</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Working outside outlined - walkways</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage3">
+        <label>Compactor and Bins outlined</label>
+    </div>
+
+    <div class="navigation">
+
+        <button
+            class="back-button"
+            type="button"
+            onclick="previousPage()">
+            ← Back
+        </button>
+
+        <button
+            class="next-button"
+            type="button"
+            onclick="nextPage()">
+            Next →
+        </button>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     PAGE 5 - STAGE 4
+===================================================== -->
+
+<div class="page" id="page4">
+
+    <h2 class="stage-title">
+        Stage 4 - Dock Offices, Equipment and Systems
+    </h2>
+
+    <div
+        class="stage-counter"
+        id="counter4">
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage4">
+        <label>Further PPE (earplugs, goggles and gloves)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage4">
+        <label>Equipment - Pens, Markers, Cutters etc.</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage4">
+        <label>Scanners - Types and Sign In/Out</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage4">
+        <label>Upstairs Dock Office Introduction</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage4">
+        <label>Container Unload - view from upstairs</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage4">
+        <label>Tour taken (full site & across all teams)</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage4">
+        <label>Finger Scan Set Up Conducted</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage4">
+        <label>Key introductions - staff</label>
+    </div>
+
+    <div class="navigation">
+
+        <button
+            class="back-button"
+            type="button"
+            onclick="previousPage()">
+            ← Back
+        </button>
+
+        <button
+            class="next-button"
+            type="button"
+            onclick="nextPage()">
+            Next →
+        </button>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     PAGE 6 - STAGE 5
+===================================================== -->
+
+<div class="page" id="page5">
+
+    <h2 class="stage-title">
+        Stage 5 - Post Tour Training
+    </h2>
+
+    <div class="stage-description">
+        Stellar and Elumina
+    </div>
+
+    <div
+        class="stage-counter"
+        id="counter5">
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage5">
+        <label>Raising an Elumina</label>
+    </div>
+
+    <div class="check-item">
+        <input type="checkbox" class="stage5">
+        <label>Stella Modules conducted</label>
+    </div>
+
+    <div class="navigation">
+
+        <button
+            class="back-button"
+            type="button"
+            onclick="previousPage()">
+            ← Back
+        </button>
+
+        <button
+            class="next-button"
+            type="button"
+            onclick="nextPage()">
+            Continue to Signatures →
+        </button>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     PAGE 7 - SIGNATURES
+===================================================== -->
+
+<div class="page" id="page6">
+
+    <h2 class="stage-title">
+        Induction Confirmation
+    </h2>
+
+    <div class="declaration">
+
+        I confirm that the above induction items have been
+        explained and/or demonstrated to me.
+
+    </div>
+
+    <h3 class="signature-heading">
+        Employee Signature
+    </h3>
+
+    <div class="signature-box">
+        <canvas id="employeeSignature"></canvas>
+    </div>
+
+    <button
+        class="clear-button"
+        type="button"
+        onclick="clearSignature('employeeSignature')">
+
+        Clear Signature
+
+    </button>
+
+    <h3 class="signature-heading">
+        Coordinator / Manager Signature
+    </h3>
+
+    <div class="signature-box">
+        <canvas id="coordinatorSignature"></canvas>
+    </div>
+
+    <button
+        class="clear-button"
+        type="button"
+        onclick="clearSignature('coordinatorSignature')">
+
+        Clear Signature
+
+    </button>
+
+    <button
+        class="complete-button"
+        type="button"
+        onclick="completeInduction()">
+
+        Complete & Email Induction
+
+    </button>
+
+    <div id="message"></div>
+
+    <div class="navigation">
+
+        <button
+            class="back-button"
+            type="button"
+            onclick="previousPage()">
+            ← Back
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+const { jsPDF } = window.jspdf;
+
+/* =====================================================
+   LOCAL SAVE / RESTORE
+===================================================== */
+
+const STORAGE_KEY = "mfgEmployeeInductionDraft";
+
+function saveProgress() {
+    const data = {
+        employeeName: document.getElementById("employeeName").value,
+        coordinator: document.getElementById("coordinator").value,
+        inductionDate: document.getElementById("inductionDate").value,
+        currentPage: currentPage,
+        checkboxes: Array.from(document.querySelectorAll('input[type="checkbox"]')).map(box => box.checked),
+        employeeSignature: signatureImages.employeeSignature,
+        coordinatorSignature: signatureImages.coordinatorSignature
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadProgress() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (!saved) {
+        document.getElementById("inductionDate").value = new Date().toISOString().split("T")[0];
+        return 0;
+    }
+
+    try {
+        const data = JSON.parse(saved);
+
+        document.getElementById("employeeName").value = data.employeeName || "";
+        document.getElementById("coordinator").value = data.coordinator || "";
+        document.getElementById("inductionDate").value = data.inductionDate || new Date().toISOString().split("T")[0];
+
+        const boxes = document.querySelectorAll('input[type="checkbox"]');
+        boxes.forEach((box, index) => {
+            box.checked = Boolean(data.checkboxes && data.checkboxes[index]);
+        });
+
+        signatureImages.employeeSignature = data.employeeSignature || null;
+        signatureImages.coordinatorSignature = data.coordinatorSignature || null;
+        signatureState.employeeSignature = Boolean(signatureImages.employeeSignature);
+        signatureState.coordinatorSignature = Boolean(signatureImages.coordinatorSignature);
+
+        const savedPage = Number(data.currentPage);
+        return Number.isInteger(savedPage) && savedPage >= 0 && savedPage < totalPages ? savedPage : 0;
+    }
+    catch (error) {
+        console.error("Unable to restore saved induction:", error);
+        localStorage.removeItem(STORAGE_KEY);
+        document.getElementById("inductionDate").value = new Date().toISOString().split("T")[0];
+        return 0;
+    }
+}
+
+function clearSavedProgress() {
+    localStorage.removeItem(STORAGE_KEY);
+}
+
+function startNewInduction() {
+    const hasData =
+        document.getElementById("employeeName").value.trim() ||
+        document.getElementById("coordinator").value.trim() ||
+        Array.from(document.querySelectorAll('input[type="checkbox"]')).some(box => box.checked) ||
+        signatureState.employeeSignature ||
+        signatureState.coordinatorSignature;
+
+    if (hasData && !confirm("Start a new induction? The current saved induction will be cleared.")) {
+        return;
+    }
+
+    clearSavedProgress();
+    document.getElementById("employeeName").value = "";
+    document.getElementById("coordinator").value = "";
+    document.getElementById("inductionDate").value = new Date().toISOString().split("T")[0];
+    document.querySelectorAll('input[type="checkbox"]').forEach(box => box.checked = false);
+    clearSignature("employeeSignature");
+    clearSignature("coordinatorSignature");
+
+    const message = document.getElementById("message");
+    message.className = "";
+    message.style.display = "none";
+    message.textContent = "";
+
+    currentPage = 0;
+    updateCounters();
+    showPage(0);
+    saveProgress();
+}
+
+/* =====================================================
+   PAGE CONTROL
+===================================================== */
+
+let currentPage = 0;
+
+const totalPages = 7;
+
+const pageNames = [
+    "Employee Details",
+    "Stage 1",
+    "Stage 2",
+    "Stage 3",
+    "Stage 4",
+    "Stage 5",
+    "Sign & Complete"
+];
+
+function showPage(pageNumber) {
+
+    document.querySelectorAll(".page").forEach(page => {
+            page.classList.remove("active");
+        });
+
+    document.getElementById("page" + pageNumber).classList.add("active");
+
+    document.getElementById("stepName").textContent =
+        pageNames[pageNumber];
+
+    document.getElementById("stepNumber").textContent =
+        "Step " +
+        (pageNumber + 1) +
+        " of " +
+        totalPages;
+
+    const percentage = ((pageNumber + 1) / totalPages) * 100;
+
+    document.getElementById("progressFill").style.width =
+        percentage + "%";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+    updateCounters();
+
+    /*
+       IMPORTANT:
+       The signature canvases are hidden until Page 7.
+       We resize them only after the page becomes visible.
+    */
+
+    if (pageNumber === 6) {
+        setTimeout(function() {
+            resizeSignatureCanvas("employeeSignature");
+            resizeSignatureCanvas("coordinatorSignature");
+        }, 100);
+    }
+
+    saveProgress();
+}
+
+
+/* =====================================================
+   VALIDATE CURRENT PAGE
+===================================================== */
+
+function validateCurrentPage() {
+
+    /* EMPLOYEE DETAILS */
+
+    if (currentPage === 0) {
+
+        const employee = document.getElementById("employeeName").value.trim();
+
+        const coordinator = document.getElementById("coordinator").value.trim();
+
+        const date = document.getElementById("inductionDate").value;
+        if (!employee) {
+
+            alert("Please enter the employee's name.");
+
+            return false;
+
+        }
+
+        if (!coordinator) {
+
+            alert("Please enter the coordinator or manager name.");
+
+            return false;
+
+        }
+
+        if (!date) {
+
+            alert("Please select the induction date.");
+
+            return false;
+
+        }
+
+    }
+
+    /* CHECKLIST STAGES */
+
+    if (
+        currentPage >= 1 &&
+        currentPage <= 5
+    ) {
+
+        const checkboxes = document.querySelectorAll(".stage" + currentPage);
+
+        const incomplete = Array.from(checkboxes).some(checkbox => !checkbox.checked);
+
+        if (incomplete) {
+
+            const completed = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
+
+            alert("Please complete all items before continuing.\n\n" + completed + " of " + checkboxes.length + " completed.");
+
+            return false;
+
+        }
+
+    }
+
+    return true;
+
+}
+
+/* =====================================================
+   NEXT
+===================================================== */
+
+function nextPage() {
+
+    if (!validateCurrentPage()) {
+        return;
+    }
+
+    if (
+        currentPage <
+        totalPages - 1
+    ) {
+
+        currentPage++;
+
+        showPage(currentPage);
+
+    }
+
+}
+
+/* =====================================================
+   BACK
+===================================================== */
+
+function previousPage() {
+
+    if (currentPage > 0) {
+
+        currentPage--;
+
+        showPage(currentPage);
+
+    }
+
+}
+
+/* =====================================================
+   COUNTERS
+===================================================== */
+
+function updateCounters() {
+
+    for (
+        let stage = 1;
+        stage <= 5;
+        stage++
+    ) {
+
+        const boxes = document.querySelectorAll(".stage" + stage);
+
+        const completed = Array.from(boxes).filter(box => box.checked).length;
+
+        const counter = document.getElementById("counter" + stage);
+
+        if (counter) {
+
+            counter.textContent =
+                completed +
+                " of " +
+                boxes.length +
+                " completed";
+
+        }
+
+    }
+
+}
+
+document.querySelectorAll('input[type="checkbox"]').forEach(
+        checkbox => {
+
+            checkbox.addEventListener("change", function() {
+                updateCounters();
+                saveProgress();
+            });
+
+        }
+    );
+
+document.getElementById("employeeName").addEventListener("input", saveProgress);
+document.getElementById("coordinator").addEventListener("input", saveProgress);
+document.getElementById("inductionDate").addEventListener("change", saveProgress);
+
+/* =====================================================
+   ALLOW ENTIRE ROW TO BE TAPPED
+===================================================== */
+
+document.querySelectorAll(".check-item").forEach(item => {
+
+        item.addEventListener(
+            "click",
+            function(event) {
+
+                if (
+                    event.target.tagName ===
+                    "INPUT"
+                ) {
+                    return;
+                }
+
+                const checkbox = this.querySelector('input[type="checkbox"]');
+
+                checkbox.checked =
+                    !checkbox.checked;
+
+                checkbox.dispatchEvent(
+                    new Event("change")
+                );
+
+            }
+        );
+
+    });
+
+/* =====================================================
+   SIGNATURE STATE
+===================================================== */
+
+const signatureState = {
+
+    employeeSignature: false,
+    coordinatorSignature: false
+
+};
+
+/*
+   Store a copy of each signature so it is not lost
+   if the user goes Back and then returns to Page 7.
+*/
+
+const signatureImages = {
+
+    employeeSignature: null,
+    coordinatorSignature: null
+
+};
+
+/* =====================================================
+   SETUP SIGNATURE PAD
+===================================================== */
+
+function setupSignature(canvasId) {
+
+    const canvas = document.getElementById(canvasId);
+
+    const ctx = canvas.getContext("2d");
+
+    let drawing = false;
+
+    function position(event) {
+
+        const rect = canvas.getBoundingClientRect();
+
+        return {
+
+            x:
+                event.clientX -
+                rect.left,
+
+            y:
+                event.clientY -
+                rect.top
+
+        };
+
+    }
+
+    canvas.addEventListener(
+        "pointerdown",
+        function(event) {
+
+            event.preventDefault();
+
+            drawing = true;
+
+            signatureState[canvasId] =
+                true;
+
+            try {
+
+                canvas.setPointerCapture(event.pointerId);
+
+            }
+
+            catch (error) {
+                // Ignore if unsupported.
+            }
+
+            const pos = position(event);
+
+            ctx.beginPath();
+
+            ctx.moveTo(pos.x, pos.y);
+
+            /*
+               Draw a tiny dot as well.
+               This means even a tap is recognised.
+            */
+
+            ctx.lineTo(pos.x + 0.01, pos.y + 0.01);
+
+            ctx.stroke();
+
+        }
+    );
+
+    canvas.addEventListener(
+        "pointermove",
+        function(event) {
+
+            if (!drawing) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const pos = position(event);
+
+            ctx.lineTo(pos.x, pos.y);
+
+            ctx.stroke();
+
+        }
+    );
+
+    function finishDrawing(event) {
+
+        if (!drawing) {
+            return;
+        }
+
+        if (event) {
+            event.preventDefault();
+        }
+
+        drawing = false;
+
+        /*
+           Save current signature.
+        */
+
+        signatureImages[canvasId] = canvas.toDataURL("image/png");
+        saveProgress();
+
+    }
+
+    canvas.addEventListener("pointerup", finishDrawing);
+
+    canvas.addEventListener("pointercancel", finishDrawing);
+
+    canvas.addEventListener(
+        "pointerleave",
+        function(event) {
+
+            if (drawing) {
+                finishDrawing(event);
+            }
+
+        }
+    );
+
+}
+
+/* =====================================================
+   RESIZE SIGNATURE CANVAS
+===================================================== */
+
+function resizeSignatureCanvas(canvasId) {
+
+    const canvas = document.getElementById(canvasId);
+
+    const rect = canvas.getBoundingClientRect();
+
+    /*
+       Don't resize a hidden canvas.
+    */
+
+    if (
+        rect.width === 0 ||
+        rect.height === 0
+    ) {
+        return;
+    }
+
+    /*
+       Save existing signature before resizing.
+       Resizing a canvas normally clears it.
+    */
+
+    let savedImage = signatureImages[canvasId];
+
+    if (
+        signatureState[canvasId] &&
+        !savedImage
+    ) {
+
+        savedImage =
+            canvas.toDataURL("image/png");
+
+    }
+
+    const ratio = window.devicePixelRatio || 1;
+
+    canvas.width =
+        Math.round(rect.width * ratio);
+
+    canvas.height =
+        Math.round(rect.height * ratio);
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+    ctx.lineWidth = 2;
+
+    ctx.lineCap = "round";
+
+    ctx.lineJoin = "round";
+
+    ctx.strokeStyle = "#000";
+
+    /*
+       Restore signature if one already exists.
+    */
+
+    if (savedImage) {
+
+        const image = new Image();
+
+        image.onload =
+            function() {
+
+                ctx.drawImage(image, 0, 0, rect.width, rect.height);
+
+            };
+
+        image.src =
+            savedImage;
+
+    }
+
+}
+
+/* =====================================================
+   CLEAR SIGNATURE
+===================================================== */
+
+function clearSignature(canvasId) {
+
+    const canvas = document.getElementById(canvasId);
+
+    const ctx = canvas.getContext("2d");
+
+    /*
+       Because the context is scaled for high-DPI
+       displays, reset the transform temporarily.
+    */
+
+    ctx.save();
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.restore();
+
+    signatureState[canvasId] =
+        false;
+
+    signatureImages[canvasId] = null;
+    saveProgress();
+}
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+function getLogoData() {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const img = new Image();
+
+            img.onload =
+                function() {
+
+                    const canvas = document.createElement("canvas");
+
+                    canvas.width =
+                        img.naturalWidth;
+
+                    canvas.height =
+                        img.naturalHeight;
+
+                    const ctx = canvas.getContext("2d");
+
+                    ctx.drawImage(img, 0, 0);
+
+                    resolve(
+                        canvas.toDataURL("image/png")
+                    );
+
+                };
+
+            img.onerror =
+                function() {
+
+                    reject(
+                        new Error("Unable to load logo.png")
+                    );
+
+                };
+
+            img.src =
+                "logo.png";
+
+        }
+    );
+
+}
+
+/* =====================================================
+   GET CHECKLIST TEXT
+===================================================== */
+
+function getStageItems(stage) {
+
+    return Array.from(
+            document.querySelectorAll(".stage" + stage)
+        ).map(
+            checkbox =>
+                checkbox.closest(".check-item").querySelector("label").textContent.trim()
+        );
+
+}
+
+/* =====================================================
+   PDF HEADER
+===================================================== */
+
+function addPDFHeader(pdf, logoData, pageNumber) {
+
+    const properties = pdf.getImageProperties(logoData);
+
+    /*
+       Keep the natural aspect ratio of the MFG logo.
+    */
+
+    const logoWidth = 100;
+    const logoHeight = (properties.height * logoWidth) / properties.width;
+
+    /* Centre the logo on the A4 page. */
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const logoX = (pageWidth - logoWidth) / 2;
+
+    pdf.addImage(logoData, "PNG", logoX, 12, logoWidth, logoHeight);
+
+    /* Line underneath the logo. */
+    pdf.setDrawColor(180, 180, 180);
+    pdf.line(20, 35, 190, 35);
+
+    /* Page number at the bottom-right. */
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text("Page " + pageNumber, 190, 280, { align: "right" });
+
+    pdf.setTextColor(0, 0, 0);
+
+}
+
+/* =====================================================
+   PDF CHECKLIST ITEM
+===================================================== */
+
+function addPDFItem(pdf, text, y) {
+
+    const wrapped = pdf.splitTextToSize(text, 145);
+
+    pdf.setFont("helvetica", "normal");
+
+    pdf.setFontSize(10);
+
+    pdf.text("[X]", 22, y);
+
+    pdf.text(wrapped, 35, y);
+
+    return (
+        y +
+        (
+            wrapped.length *
+            5
+        ) +
+        3
+    );
+
+}
+
+/* =====================================================
+   COMPLETE INDUCTION
+===================================================== */
+
+async function completeInduction() {
+
+    /* CHECK ALL STAGES */
+
+    for (
+        let stage = 1;
+        stage <= 5;
+        stage++
+    ) {
+
+        const boxes = document.querySelectorAll(".stage" + stage);
+
+        const incomplete = Array.from(boxes).some(box => !box.checked);
+
+        if (incomplete) {
+
+            alert("Stage " + stage + " has incomplete items.");
+
+            return;
+
+        }
+
+    }
+
+    /* CHECK SIGNATURES */
+
+    if (
+        !signatureState.employeeSignature
+    ) {
+
+        alert("The employee must sign the induction.");
+
+        return;
+
+    }
+
+    if (
+        !signatureState.coordinatorSignature
+    ) {
+
+        alert("The coordinator / manager must sign the induction.");
+
+        return;
+
+    }
+
+    const employee = document.getElementById("employeeName").value.trim();
+
+    const coordinator = document.getElementById("coordinator").value.trim();
+
+    const date = document.getElementById("inductionDate").value;
+
+    /*
+       Date used inside PDF:
+       yyyy-mm-dd → dd/mm/yyyy
+
+       The original "date" variable stays yyyy-mm-dd
+       for the PDF filename.
+    */
+
+    const dateParts = date.split("-");
+
+    const displayDate = dateParts[2] + "/" + dateParts[1] + "/" + dateParts[0];
+
+    /* LOAD LOGO */
+
+    let logoData;
+
+    try {
+
+        logoData =
+            await getLogoData();
+
+    }
+
+    catch (error) {
+
+        alert("Unable to load logo.png.");
+
+        return;
+
+    }
+
+    /* CREATE PDF */
+
+    const pdf =
+        new jsPDF({
+
+            orientation:
+                "portrait",
+
+            unit:
+                "mm",
+
+            format:
+                "a4"
+
+        });
+
+    let pageNumber = 1;
+
+    addPDFHeader(pdf, logoData, pageNumber);
+
+    /* =================================================
+       PAGE 1
+    ================================================= */
+
+    pdf.setFont("helvetica", "bold");
+
+    pdf.setFontSize(20);
+
+    pdf.text("Employee Induction Checklist", 20, 53);
+
+    pdf.setFontSize(11);
+
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text("Distribution Centre", 20, 61);
+
+    /* DETAILS BOX */
+
+    pdf.setDrawColor(190, 190, 190);
+
+    pdf.roundedRect(20, 72, 170, 38, 2, 2);
+
+    pdf.setFont("helvetica", "bold");
+
+    pdf.text("Employee:", 27, 84);
+
+    pdf.text("Coordinator / Manager:", 27, 95);
+
+    pdf.text("Induction Date:", 27, 106);
+
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text(employee, 75, 84);
+
+    pdf.text(coordinator, 75, 95);
+
+    pdf.text(displayDate, 75, 106);
+
+    let y = 128;
+
+    const stageTitles = {
+
+        1:
+            "Stage 1 - Introduction - Reception and Car Park",
+
+        2:
+            "Stage 2 - Front Building including Toilets, Break Room and Smokers Area",
+
+        3:
+            "Stage 3 - DC Walkthrough including all Depts, Canopies and Racking",
+
+        4:
+            "Stage 4 - Dock Offices, Equipment and Systems",
+
+        5:
+            "Stage 5 - Post Tour Training, Stellar and Elumina"
+
+    };
+
+    /* =================================================
+       STAGES 1 & 2
+    ================================================= */
+
+    for (
+        const stage of [1, 2]
+    ) {
+
+        pdf.setFont("helvetica", "bold");
+
+        pdf.setFontSize(12);
+
+        const heading = pdf.splitTextToSize(stageTitles[stage], 165);
+
+        pdf.text(heading, 20, y);
+
+        y +=
+            heading.length *
+            6 +
+            4;
+
+        for (
+            const item of
+            getStageItems(stage)
+        ) {
+
+            /*
+               If the first page runs out of space,
+               continue onto another page.
+            */
+
+            if (y > 270) {
+
+                pdf.addPage();
+
+                pageNumber++;
+
+                addPDFHeader(pdf, logoData, pageNumber);
+
+                y = 50;
+
+            }
+
+            y =
+                addPDFItem(pdf, item, y);
+
+        }
+
+        y += 6;
+
+    }
+
+    /* =================================================
+       STAGE 3
+    ================================================= */
+
+    pdf.addPage();
+
+    pageNumber++;
+
+    addPDFHeader(pdf, logoData, pageNumber);
+
+    y = 50;
+
+    pdf.setFont("helvetica", "bold");
+
+    pdf.setFontSize(14);
+
+    const stage3Heading = pdf.splitTextToSize(stageTitles[3], 165);
+
+    pdf.text(stage3Heading, 20, y);
+
+    y +=
+        stage3Heading.length *
+        6 +
+        6;
+
+    for (
+        const item of
+        getStageItems(3)
+    ) {
+
+        if (y > 270) {
+
+            pdf.addPage();
+
+            pageNumber++;
+
+            addPDFHeader(pdf, logoData, pageNumber);
+
+            y = 50;
+
+            pdf.setFont("helvetica", "bold");
+
+            pdf.setFontSize(11);
+
+            pdf.text(
+                "Stage 3 - DC Walkthrough (continued)",
+                20,
+                y
+            );
+
+            y += 10;
+
+        }
+
+        y =
+            addPDFItem(pdf, item, y);
+
+    }
+
+    /* =================================================
+       STAGES 4 & 5
+    ================================================= */
+
+    pdf.addPage();
+
+    pageNumber++;
+
+    addPDFHeader(pdf, logoData, pageNumber);
+
+    y = 50;
+
+    for (
+        const stage of [4, 5]
+    ) {
+
+        pdf.setFont("helvetica", "bold");
+
+        pdf.setFontSize(13);
+
+        const heading = pdf.splitTextToSize(stageTitles[stage], 165);
+
+        pdf.text(heading, 20, y);
+
+        y +=
+            heading.length *
+            6 +
+            5;
+
+        for (
+            const item of
+            getStageItems(stage)
+        ) {
+
+            if (y > 270) {
+
+                pdf.addPage();
+
+                pageNumber++;
+
+                addPDFHeader(pdf, logoData, pageNumber);
+
+                y = 50;
+
+            }
+
+            y =
+                addPDFItem(pdf, item, y);
+
+        }
+
+        y += 10;
+
+    }
+
+    /* =================================================
+       SIGNATURE PAGE
+    ================================================= */
+
+    pdf.addPage();
+
+    pageNumber++;
+
+    addPDFHeader(pdf, logoData, pageNumber);
+
+    pdf.setFont("helvetica", "bold");
+
+    pdf.setFontSize(18);
+
+    pdf.text("Induction Confirmation", 20, 55);
+
+    pdf.setFont("helvetica", "normal");
+
+    pdf.setFontSize(11);
+
+    const declaration = "I confirm that the above induction items have been explained and/or demonstrated to me.";
+
+    const declarationLines = pdf.splitTextToSize(declaration, 165);
+
+    pdf.text(declarationLines, 20, 68);
+
+    /* EMPLOYEE */
+
+    pdf.setFont("helvetica", "bold");
+
+    pdf.text("Employee:", 20, 92);
+
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text(employee, 48, 92);
+
+    /* SIGNATURE HEADINGS */
+
+    pdf.setFont("helvetica", "bold");
+
+    pdf.text("Employee Signature", 20, 115);
+
+    pdf.text("Coordinator / Manager Signature", 110, 115);
+
+    /* SIGNATURE IMAGES */
+
+    const employeeCanvas = document.getElementById("employeeSignature");
+
+    const coordinatorCanvas = document.getElementById("coordinatorSignature");
+
+    /*
+       Get the current signature directly from each canvas.
+    */
+
+    const employeeImage = employeeCanvas.toDataURL("image/png");
+
+    const coordinatorImage = coordinatorCanvas.toDataURL("image/png");
+
+    pdf.addImage(employeeImage, "PNG", 20, 120, 75, 35);
+
+    pdf.addImage(coordinatorImage, "PNG", 110, 120, 75, 35);
+
+    /* SIGNATURE LINES */
+
+    pdf.line(20, 158, 95, 158);
+
+    pdf.line(110, 158, 185, 158);
+
+    /* NAMES */
+
+    pdf.setFontSize(9);
+
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text(employee, 20, 164);
+
+    pdf.text(coordinator, 110, 164);
+
+    /* COMPLETED */
+
+    const completed = new Date().toLocaleString("en-AU");
+
+    pdf.setFontSize(10);
+
+    pdf.text("Induction Date: " + displayDate, 20, 185);
+
+    pdf.text("Completed: " + completed, 20, 193);
+
+    /* FOOTER */
+
+    pdf.setDrawColor(190, 190, 190);
+
+    pdf.line(20, 270, 190, 270);
+
+    pdf.setFontSize(8);
+
+    pdf.setTextColor(100, 100, 100);
+
+    pdf.text("Munro Footwear Group - Distribution Centre", 20, 277);
+
+    pdf.setTextColor(0, 0, 0);
+
+    /* =================================================
+       CREATE PDF FILE
+    ================================================= */
+
+    const pdfBlob = pdf.output("blob");
+
+    const safeName = employee.replace(/[^a-z0-9]/gi, "_");
+
+    const fileName =
+        safeName +
+        "_Employee_Induction_" +
+        date +
+        ".pdf";
+
+    const pdfFile =
+        new File(
+
+            [pdfBlob],
+
+            fileName,
+
+            {
+                type:
+                    "application/pdf"
+            }
+
+        );
+
+    /* =================================================
+       SHARE PDF
+    ================================================= */
+
+    const shareData = {
+
+        title:
+            "Employee Induction - " +
+            employee,
+
+        text:
+            "Please find attached the completed employee induction for " +
+            employee +
+            ".",
+
+        files: [
+            pdfFile
+        ]
+
+    };
+
+    if (
+
+        navigator.canShare &&
+
+        navigator.canShare({
+            files: [
+                pdfFile
+            ]
+        })
+
+    ) {
+
+        try {
+
+            await navigator.share(shareData);
+
+            clearSavedProgress();
+
+            const message = document.getElementById("message");
+
+            message.className =
+                "success";
+
+            message.textContent =
+                "Induction completed. The PDF has been created and shared.";
+
+        }
+
+        catch (error) {
+
+            if (
+                error.name !==
+                "AbortError"
+            ) {
+
+                console.error(error);
+
+                const message = document.getElementById("message");
+
+                message.className =
+                    "error";
+
+                message.textContent =
+                    "Unable to open the share menu.";
+
+            }
+
+        }
+
+    }
+
+    else {
+
+        /*
+           Fallback for desktop browsers that don't
+           support sharing files.
+
+           Download the PDF instead.
+        */
+
+        pdf.save(fileName);
+        clearSavedProgress();
+
+        const message = document.getElementById("message");
+
+        message.className =
+            "success";
+
+        message.textContent =
+            "This device does not support direct PDF sharing, so the completed induction PDF has been downloaded instead.";
+
+    }
+
+}
+
+/* =====================================================
+   INITIALISE SIGNATURE EVENTS
+
+   Do NOT resize here because Page 7 is hidden.
+===================================================== */
+
+setupSignature("employeeSignature");
+
+setupSignature("coordinatorSignature");
+
+/* =====================================================
+   INITIALISE PAGE
+===================================================== */
+
+updateCounters();
+currentPage = loadProgress();
+showPage(currentPage);
+
+</script>
+
+</body>
+</html>
