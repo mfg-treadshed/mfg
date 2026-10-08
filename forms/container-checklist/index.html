@@ -460,7 +460,7 @@ function render() {
                     ['date', 'Inspection date', 'date'],
                     ['container', 'Container number', 'text'],
                     ['seal', 'Seal number', 'text']
-                ]) html += `<label class="field">${label}<input type="${type}" id="${id}" value="${escape(state[id])}" required ${id==='container'||id==='seal'?'autocapitalize="characters"':''}></label>`;
+                ]) html += `<label class="field">${label}<input type="${type}" id="${id}" value="${escape(state[id])}" required ${id==='container'?'autocapitalize="characters" spellcheck="false" pattern="[A-Za-z]{4}[0-9]{7}" placeholder="ABCD1234567" title="Four letters followed by seven numbers"':id==='seal'?'autocapitalize="characters"':''}></label>`;
             html += '</div>'
         }
         sections[step].questions.forEach((q, i) => {
@@ -490,6 +490,12 @@ function render() {
     if (step < 4) {
         for (const id of ['inspector', 'container', 'seal', 'date'])
             if ($(id)) $(id).oninput = e => {
+                if (id === 'container') {
+                    const start = e.target.selectionStart;
+                    const end = e.target.selectionEnd;
+                    e.target.value = e.target.value.toUpperCase();
+                    if (start !== null) e.target.setSelectionRange(start, end);
+                }
                 state[id] = e.target.value;
                 save()
             };
@@ -524,13 +530,20 @@ function dateDisplay(d) {
 }
 
 function validate(step) {
+    state.container = state.container.trim().toUpperCase();
     if (step === 0) {
+        $('container').value = state.container;
         for (const id of ['inspector', 'container', 'seal', 'date'])
             if (!state[id].trim()) {
                 notify('Please enter all general information fields.', true);
                 $(id).focus();
                 return false
             }
+    }
+    if (!/^[A-Z]{4}[0-9]{7}$/.test(state.container)) {
+        notify('Container number must contain four letters followed by seven numbers, for example ABCD1234567.', true);
+        if (step === 0) $('container').focus();
+        return false;
     }
     for (let i = 0; i < sections[step].questions.length; i++)
         if (!state.answers[`${step}-${i}`]) {
@@ -655,6 +668,10 @@ function getLogoData() {
     });
 }
 async function makePdf() {
+    state.container = state.container.trim().toUpperCase();
+    if (!/^[A-Z]{4}[0-9]{7}$/.test(state.container)) {
+        throw new Error('Container number must contain four letters followed by seven numbers, for example ABCD1234567. Go back to General Information to correct it.');
+    }
     if (!window.jspdf) throw new Error('PDF tools could not load. Please reload the page and try again.');
     const logoData = await getLogoData();
     const doc = new window.jspdf.jsPDF();
