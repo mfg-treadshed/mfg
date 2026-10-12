@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Employee Induction Checklist</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23111'/%3E%3Crect x='15' y='12' width='34' height='42' rx='4' fill='white'/%3E%3Cpath d='M23 25l5 5 12-13M23 42l5 5 12-13' fill='none' stroke='%23111' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E'>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -266,10 +265,6 @@ canvas {
     cursor: pointer;
 }
 
-.pdf-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:35px; }
-.pdf-actions button { border:0; border-radius:6px; padding:14px 20px; font-size:15px; cursor:pointer; }
-.pdf-download { background:#111; color:white; }
-.pdf-secondary { background:#e4e6eb; color:#111; }
 /* MESSAGE */
 
 #message {
@@ -962,11 +957,14 @@ canvas {
 
     </button>
 
-    <div class="pdf-actions">
-<button class="pdf-download" type="button" onclick="downloadInductionPDF()">Download PDF</button>
-<button class="pdf-secondary" type="button" onclick="shareInductionPDF()">Share PDF</button>
-<button class="pdf-secondary" type="button" onclick="startNewInduction()">New induction</button>
-</div>
+    <button
+        class="complete-button"
+        type="button"
+        onclick="completeInduction()">
+
+        Complete & Email Induction
+
+    </button>
 
     <div id="message"></div>
 
@@ -1719,11 +1717,8 @@ function addPDFItem(pdf, text, y) {
    COMPLETE INDUCTION
 ===================================================== */
 
-async function generateInductionPDF() {
+async function completeInduction() {
 
-    if (!document.getElementById("employeeName").value.trim() || !document.getElementById("coordinator").value.trim() || !document.getElementById("inductionDate").value) {
-      alert("Please complete the employee details first."); return;
-    }
     /* CHECK ALL STAGES */
 
     for (
@@ -2180,7 +2175,99 @@ async function generateInductionPDF() {
 
         );
 
-    return { pdf, pdfFile, fileName, employee };
+    /* =================================================
+       SHARE PDF
+    ================================================= */
+
+    const shareData = {
+
+        title:
+            "Employee Induction - " +
+            employee,
+
+        text:
+            "Please find attached the completed employee induction for " +
+            employee +
+            ".",
+
+        files: [
+            pdfFile
+        ]
+
+    };
+
+    if (
+
+        navigator.canShare &&
+
+        navigator.canShare({
+            files: [
+                pdfFile
+            ]
+        })
+
+    ) {
+
+        try {
+
+            await navigator.share(shareData);
+
+            clearSavedProgress();
+
+            const message = document.getElementById("message");
+
+            message.className =
+                "success";
+
+            message.textContent =
+                "Induction completed. The PDF has been created and shared.";
+
+        }
+
+        catch (error) {
+
+            if (
+                error.name !==
+                "AbortError"
+            ) {
+
+                console.error(error);
+
+                const message = document.getElementById("message");
+
+                message.className =
+                    "error";
+
+                message.textContent =
+                    "Unable to open the share menu.";
+
+            }
+
+        }
+
+    }
+
+    else {
+
+        /*
+           Fallback for desktop browsers that don't
+           support sharing files.
+
+           Download the PDF instead.
+        */
+
+        pdf.save(fileName);
+        clearSavedProgress();
+
+        const message = document.getElementById("message");
+
+        message.className =
+            "success";
+
+        message.textContent =
+            "This device does not support direct PDF sharing, so the completed induction PDF has been downloaded instead.";
+
+    }
 
 }
 
@@ -2189,35 +2276,6 @@ async function generateInductionPDF() {
 
    Do NOT resize here because Page 7 is hidden.
 ===================================================== */
-
-function showPDFMessage(message, error = false) {
- const el = document.getElementById("message");
- el.className = error ? "error" : "success";
- el.textContent = message;
-}
-async function downloadInductionPDF() {
- try {
-  const result = await generateInductionPDF();
-  if (!result) return;
-  result.pdf.save(result.fileName);
-  showPDFMessage("PDF downloaded. Induction details remain saved.");
- } catch (error) { console.error(error); showPDFMessage("Unable to generate PDF.", true); }
-}
-async function shareInductionPDF() {
- try {
-  const result = await generateInductionPDF();
-  if (!result) return;
-  if (!navigator.share || !navigator.canShare || !navigator.canShare({files:[result.pdfFile]})) {
-   showPDFMessage("PDF sharing is not supported in this browser. Use Download PDF instead.", true);
-   return;
-  }
-  await navigator.share({title:"Employee Induction - " + result.employee, files:[result.pdfFile]});
-  showPDFMessage("PDF sent to the share menu. Induction details remain saved.");
- } catch (error) {
-  if (error.name === "AbortError") return;
-  console.error(error); showPDFMessage("Unable to share PDF.", true);
- }
-}
 
 setupSignature("employeeSignature");
 
