@@ -391,6 +391,21 @@ const sections = [{
     title: 'Inventory and Unloading Condition',
     questions: ['Are absorbent moisture pads provided throughout the container?', 'Is the stock presented in PO order, allowing for quick unloading?', 'Are the carton labels facing the front?', 'Was the load inside secured and undamaged?', 'Is the empty container clean and presentable for pick-up?', 'Have the doors been closed properly?']
 }];
+const photoTriggers = [['Yes'], ['Yes', 'No', 'No'], ['No', 'No', 'No', 'No', 'No'], ['No', 'No', 'No', 'No', 'Yes', 'Yes']];
+const questionNumber = (section, question) => `${section + 1}.${question + 1}`;
+const questionPhotos = (section, question) => state.photos.filter(p => p.section === section && p.question === question);
+const needsPhoto = (section, question) => state.answers[`${section}-${question}`] === photoTriggers[section][question];
+function renamePhotos() {
+    sections.forEach((section, n) => section.questions.forEach((q, i) => {
+        questionPhotos(n, i).forEach((p, index) => {
+            p.name = `${questionNumber(n, i)}-${String(index + 1).padStart(2, '0')}.jpg`;
+        });
+    }));
+}
+function photoControls(section, question) {
+    const required = needsPhoto(section, question);
+    return `<div class="photos"><strong>Photos (${required ? 'required' : 'optional'})</strong><div class="muted">${required ? 'At least one photo is required. ' : ''}Up to 5 photos for this question. ${questionPhotos(section, question).length} of 5 added.</div><label class="upload">Upload photos<input type="file" data-upload="${question}" accept="image/*" multiple></label><label class="upload">Take photo<input type="file" data-camera="${question}" accept="image/*" capture="environment"></label><div class="gallery">${gallery(section, true, question)}</div></div>`;
+}
 const today = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
@@ -465,9 +480,9 @@ function render() {
         }
         sections[step].questions.forEach((q, i) => {
             const key = `${step}-${i}`;
-            html += `<fieldset><legend>${escape(q)}</legend><div class="choices">${['Yes','No'].map(v=>`<label class="choice"><input type="radio" name="${key}" value="${v}" ${state.answers[key]===v?'checked':''} required>${v}</label>`).join('')}</div></fieldset>`
+            html += `<fieldset><legend>${questionNumber(step, i)} ${escape(q)}</legend><div class="choices">${['Yes','No'].map(v=>`<label class="choice"><input type="radio" name="${key}" value="${v}" ${state.answers[key]===v?'checked':''} required>${v}</label>`).join('')}</div>${photoControls(step, i)}</fieldset>`
         });
-        html += `<div class="photos"><strong>Photos (optional)</strong><div class="muted">Add photos for this section. Up to 20 photos per inspection.</div><label class="upload">Upload photos<input type="file" id="upload" accept="image/*" multiple></label><label class="upload">Take photo<input type="file" id="camera" accept="image/*" capture="environment"></label><div class="gallery">${gallery(step)}</div></div>`
+
     } else {
         html = '<h2>Review & PDF</h2><div class="muted">Check your answers before downloading or sharing the inspection.</div>';
         for (const [label, value] of [
@@ -479,7 +494,7 @@ function render() {
         sections.forEach((s, n) => {
             html += `<h2>Section ${n+1} — ${escape(s.title)}</h2>`;
             s.questions.forEach((q, i) => {
-                html += `<div class="summary"><span>${escape(q)}</span><strong>${escape(state.answers[`${n}-${i}`]||'Unanswered')}</strong></div>`
+                html += `<div class="summary"><span>${questionNumber(n, i)} ${escape(q)}</span><strong>${escape(state.answers[`${n}-${i}`]||'Unanswered')}</strong></div>`
             });
             html += `<div class="gallery">${gallery(n,false)}</div>`
         });
@@ -500,10 +515,12 @@ function render() {
             };
         document.querySelectorAll('input[type=radio]').forEach(el => el.onchange = () => {
             state.answers[el.name] = el.value;
-            save()
+            save();
+            render()
         });
-        $('upload').onchange = e => addPhotos(e.target.files, step);
-        $('camera').onchange = e => addPhotos(e.target.files, step)
+        document.querySelectorAll('[data-upload], [data-camera]').forEach(input => {
+            input.onchange = e => addPhotos(e.target.files, step, Number(input.dataset.upload ?? input.dataset.camera));
+        })
     } else {
         $('download').onclick = () => exportPdf(false);
         $('share').onclick = () => exportPdf(true);
@@ -511,13 +528,14 @@ function render() {
     }
     document.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => {
         state.photos = state.photos.filter(p => p.id !== b.dataset.remove);
+        renamePhotos();
         save();
         render()
     })
 }
 
-function gallery(n, remove = true) {
-    return state.photos.filter(p => p.section === n).map(p => `<div class="photo"><img src="${p.data}" alt="${escape(p.name)}"><p>${escape(p.name)}</p>${remove?`<button data-remove="${p.id}" type="button">Remove photo</button>`:''}</div>`).join('')
+function gallery(n, remove = true, question = null) {
+    return state.photos.filter(p => p.section === n && (question === null || p.question === question)).map(p => `<div class="photo"><img src="${p.data}" alt="${escape(p.name)}"><p>${escape(p.name)}</p>${remove?`<button data-remove="${p.id}" type="button">Remove photo</button>`:''}</div>`).join('')
 }
 
 function dateDisplay(d) {
@@ -545,7 +563,15 @@ function validate(step) {
             notify('Please answer every question with Yes or No.', true);
             document.querySelector(`input[name="${step}-${i}"]`).focus();
             return false
-        } return true
+        }
+    for (let i = 0; i < sections[step].questions.length; i++) {
+        if (needsPhoto(step, i) && !questionPhotos(step, i).length) {
+            notify(`Question ${questionNumber(step, i)} requires at least one photo when the answer is ${photoTriggers[step][i]}.`, true);
+            document.querySelector(`[data-upload="${i}"]`)?.focus();
+            return false;
+        }
+    }
+    return true
 }
 $('next').onclick = () => {
     if (pending) {
@@ -581,13 +607,17 @@ function reset() {
     render();
     window.scrollTo(0, 0)
 }
-async function addPhotos(files, section) {
+async function addPhotos(files, section, question) {
+    if (pending) {
+        notify('Please wait for your photos to finish processing.');
+        return;
+    }
     pending++;
     $('next').disabled = true;
     const errors = [];
     for (const file of files) {
-        if (state.photos.length >= 20) {
-            errors.push('The limit is 20 photos per inspection.');
+        if (questionPhotos(section, question).length >= 5) {
+            errors.push(`Question ${questionNumber(section, question)} has a limit of 5 photos.`);
             break
         }
         if (file.size > 25 * 1024 * 1024) {
@@ -598,10 +628,12 @@ async function addPhotos(files, section) {
             const data = await imageData(file);
             state.photos.push({
                 id: crypto.randomUUID(),
-                name: file.name,
+                name: '',
                 section,
+                question,
                 data
             });
+            renamePhotos();
             save()
         } catch {
             errors.push(`${file.name}: could not open this photo. Try a JPEG or PNG.`)
@@ -663,13 +695,21 @@ function getLogoData() {
     });
 }
 async function makePdf() {
+    if (pending) throw new Error('Please wait for your photos to finish processing.');
+    for (let n = 0; n < sections.length; n++) {
+        for (let i = 0; i < sections[n].questions.length; i++) {
+            if (!state.answers[`${n}-${i}`]) throw new Error(`Please answer question ${questionNumber(n, i)}.`);
+            if (needsPhoto(n, i) && !questionPhotos(n, i).length) throw new Error(`Question ${questionNumber(n, i)} requires at least one photo when the answer is ${photoTriggers[n][i]}. Go back to that section to add a photo.`);
+        }
+    }
+    renamePhotos();
     state.container = state.container.trim().toUpperCase();
     if (!/^[A-Z]{4}[0-9]{7}$/.test(state.container)) {
         throw new Error('Container number must contain four letters followed by seven numbers, for example ABCD1234567. Go back to General Information to correct it.');
     }
     if (!window.jspdf) throw new Error('PDF tools could not load. Please reload the page and try again.');
     const logoData = await getLogoData();
-    const doc = new window.jspdf.jsPDF();
+    const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const properties = doc.getImageProperties(logoData);
     const logoWidth = 100;
     const logoHeight = properties.height * logoWidth / properties.width;
@@ -701,23 +741,25 @@ async function makePdf() {
             ['Seal number', state.seal]
         ]) line(`${k}: ${v}`);
     sections.forEach((s, n) => {
+        if (n > 0) page();
         y += 8;
         room(25);
         line(`Section ${n+1} - ${s.title}`, 14, true);
         s.questions.forEach((q, i) => {
             y += 3;
-            line(`${q}  ${state.answers[`${n}-${i}`]}`)
+            line(`${questionNumber(n, i)} ${q}  ${state.answers[`${n}-${i}`]}`)
         });
-        state.photos.filter(p => p.section === n).forEach((p, i) => {
+        state.photos.filter(p => p.section === n).sort((a, b) => (a.question ?? 99) - (b.question ?? 99)).forEach(p => {
+            page();
+            line(`Section ${n+1} - ${s.title}`, 14, true);
+            if (Number.isInteger(p.question)) line(`${questionNumber(n, p.question)} ${s.questions[p.question]}`, 11);
+            line(p.name, 10, true);
             const prop = doc.getImageProperties(p.data);
-            const scale = Math.min(174 / prop.width, 110 / prop.height),
-                w = prop.width * scale,
-                h = prop.height * scale;
-            room(h + 23);
-            y += 5;
-            line(`Photo ${i+1}: ${p.name}`, 10);
-            doc.addImage(p.data, 'JPEG', 18, y, w, h);
-            y += h + 5
+            const top = y + 5;
+            const availableHeight = 275 - top;
+            const scale = Math.min(174 / prop.width, availableHeight / prop.height);
+            const w = prop.width * scale, h = prop.height * scale;
+            doc.addImage(p.data, 'JPEG', (210 - w) / 2, top + (availableHeight - h) / 2, w, h);
         })
     });
     const total = doc.getNumberOfPages();
