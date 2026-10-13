@@ -402,7 +402,6 @@ const fresh = () => ({
     seal: '',
     date: today(),
     answers: {},
-    notes: {},
     photos: []
 });
 let state = fresh(),
@@ -468,7 +467,7 @@ function render() {
             const key = `${step}-${i}`;
             html += `<fieldset><legend>${escape(q)}</legend><div class="choices">${['Yes','No'].map(v=>`<label class="choice"><input type="radio" name="${key}" value="${v}" ${state.answers[key]===v?'checked':''} required>${v}</label>`).join('')}</div></fieldset>`
         });
-        html += `<label class="field" style="margin-top:22px">Notes (optional)<textarea id="notes">${escape(state.notes[step]||'')}</textarea></label><div class="photos"><strong>Photos (optional)</strong><div class="muted">Add photos for this section. Up to 20 photos per inspection.</div><label class="upload">Upload photos<input type="file" id="upload" accept="image/*" multiple></label><label class="upload">Take photo<input type="file" id="camera" accept="image/*" capture="environment"></label><div class="gallery">${gallery(step)}</div></div>`
+        html += `<div class="photos"><strong>Photos (optional)</strong><div class="muted">Add photos for this section. Up to 20 photos per inspection.</div><label class="upload">Upload photos<input type="file" id="upload" accept="image/*" multiple></label><label class="upload">Take photo<input type="file" id="camera" accept="image/*" capture="environment"></label><div class="gallery">${gallery(step)}</div></div>`
     } else {
         html = '<h2>Review & PDF</h2><div class="muted">Check your answers before downloading or sharing the inspection.</div>';
         for (const [label, value] of [
@@ -482,7 +481,6 @@ function render() {
             s.questions.forEach((q, i) => {
                 html += `<div class="summary"><span>${escape(q)}</span><strong>${escape(state.answers[`${n}-${i}`]||'Unanswered')}</strong></div>`
             });
-            if (state.notes[n]) html += `<p>${escape(state.notes[n]).replace(/\n/g,'<br>')}</p>`;
             html += `<div class="gallery">${gallery(n,false)}</div>`
         });
         html += '<div class="export"><button id="download" class="primary">Download PDF</button><button id="share">Share PDF</button><button id="finishReset">New inspection</button></div>'
@@ -500,10 +498,6 @@ function render() {
                 state[id] = e.target.value;
                 save()
             };
-        $('notes').oninput = e => {
-            state.notes[step] = e.target.value;
-            save()
-        };
         document.querySelectorAll('input[type=radio]').forEach(el => el.onchange = () => {
             state.answers[el.name] = el.value;
             save()
@@ -714,11 +708,6 @@ async function makePdf() {
             y += 3;
             line(`${q}  ${state.answers[`${n}-${i}`]}`)
         });
-        if (state.notes[n]) {
-            y += 5;
-            line('Notes', 11, true);
-            line(state.notes[n])
-        }
         state.photos.filter(p => p.section === n).forEach((p, i) => {
             const prop = doc.getImageProperties(p.data);
             const scale = Math.min(174 / prop.width, 110 / prop.height),
@@ -773,7 +762,7 @@ async function exportPdf(share) {
             notify('PDF shared.')
         } else {
             download(exportFile);
-            notify(share ? 'File sharing is unavailable in this browser. The PDF has been downloaded; attach it to your email.' : 'PDF downloaded, including your answers, notes and photos.')
+            notify(share ? 'File sharing is unavailable in this browser. The PDF has been downloaded; attach it to your email.' : 'PDF downloaded, including your answers and photos.')
         }
     } catch (e) {
         if (e.name !== 'AbortError') notify(e.message || 'Could not create the PDF. Please try again.', true)
