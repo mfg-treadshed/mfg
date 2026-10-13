@@ -747,12 +747,15 @@ async function makePdf() {
         line(`Section ${n+1} - ${s.title}`, 14, true);
         s.questions.forEach((q, i) => {
             y += 3;
-            line(`${questionNumber(n, i)} ${q}  ${state.answers[`${n}-${i}`]}`)
+            line(`${questionNumber(n, i)} ${q}  ${state.answers[`${n}-${i}`]}`);
+            const photos = questionPhotos(n, i);
+            if (photos.length) {
+                line('Photos uploaded', 10, true);
+                photos.forEach(photo => line(photo.name, 10));
+            }
         });
         state.photos.filter(p => p.section === n).sort((a, b) => (a.question ?? 99) - (b.question ?? 99)).forEach(p => {
             page();
-            line(`Section ${n+1} - ${s.title}`, 14, true);
-            if (Number.isInteger(p.question)) line(`${questionNumber(n, p.question)} ${s.questions[p.question]}`, 11);
             line(p.name, 10, true);
             const prop = doc.getImageProperties(p.data);
             const top = y + 5;
