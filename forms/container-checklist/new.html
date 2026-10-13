@@ -410,6 +410,12 @@ const photoTriggers = [['Yes'],
                        ['Yes', 'No', 'No'], 
                        ['No', 'No', 'No', 'No', 'No'], 
                        ['No', 'No', 'No', 'No', 'No', 'Both', 'Yes']];
+
+const answerMessages = {
+    '3-5': {
+        No: 'The container must be cleaned and made presentable before pick-up.'
+    }
+};
 const questionNumber = (section, question) => `${section + 1}.${question + 1}`;
 const questionPhotos = (section, question) => state.photos.filter(p => p.section === section && p.question === question);
 const needsPhoto = (section, question) => {
@@ -506,9 +512,41 @@ function render() {
             html += '</div>'
         }
         sections[step].questions.forEach((q, i) => {
-            const key = `${step}-${i}`;
-            html += `<fieldset><legend>${questionNumber(step, i)} ${escape(q)}</legend><div class="choices">${['Yes','No'].map(v=>`<label class="choice"><input type="radio" name="${key}" value="${v}" ${state.answers[key]===v?'checked':''} required>${v}</label>`).join('')}</div>${photoControls(step, i)}</fieldset>`
-        });
+           const key = `${step}-${i}`;
+           const answer = state.answers[key];
+       
+           const message = answerMessages[key]?.[answer];
+       
+           html += `
+               <fieldset>
+                   <legend>${questionNumber(step, i)} ${escape(q)}</legend>
+       
+                   <div class="choices">
+                       ${['Yes', 'No'].map(v => `
+                           <label class="choice">
+                               <input
+                                   type="radio"
+                                   name="${key}"
+                                   value="${v}"
+                                   ${answer === v ? 'checked' : ''}
+                                   required
+                               >
+                               ${v}
+                           </label>
+                       `).join('')}
+                   </div>
+       
+                   ${message ? `
+                       <div class="message">
+                           <strong>Action required</strong>
+                           <div>${escape(message)}</div>
+                       </div>
+                   ` : ''}
+       
+                   ${photoControls(step, i)}
+               </fieldset>
+           `;
+    });
 
     } else {
         html = '<h2>Review & PDF</h2><div class="muted">Check your answers before downloading or sharing the inspection.</div>';
