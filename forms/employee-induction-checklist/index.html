@@ -7,6 +7,7 @@
 
 <title>Employee Induction Checklist</title>
 <link rel="icon" href="https://fonts.gstatic.com/s/i/materialicons/person/v1/24px.svg" type="image/svg+xml">
+    
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
@@ -263,6 +264,29 @@ canvas {
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
+}
+
+.induction-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 35px;
+}
+
+.induction-actions button {
+    width: auto;
+    margin: 0;
+    padding: 14px 20px;
+    border: 0;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.induction-actions button:nth-child(n + 2) {
+    background: #e4e7ec;
+    color: #222;
 }
 
 /* MESSAGE */
@@ -957,14 +981,36 @@ canvas {
 
     </button>
 
+    <div class="induction-actions">
+
     <button
         class="complete-button"
         type="button"
-        onclick="completeInduction()">
+        onclick="completeInduction('download')">
 
-        Complete & Email Induction
+        Download PDF
 
     </button>
+
+    <button
+        class="complete-button"
+        type="button"
+        onclick="completeInduction('share')">
+
+        Share PDF
+
+    </button>
+
+    <button
+        class="new-induction-button"
+        type="button"
+        onclick="startNewInduction()">
+
+        Start New Induction
+
+    </button>
+
+    </div>
 
     <div id="message"></div>
 
@@ -1717,7 +1763,7 @@ function addPDFItem(pdf, text, y) {
    COMPLETE INDUCTION
 ===================================================== */
 
-async function completeInduction() {
+async function completeInduction(action) {
 
     /* CHECK ALL STAGES */
 
@@ -2160,6 +2206,16 @@ async function completeInduction() {
         "_Employee_Induction_" +
         date +
         ".pdf";
+
+    if (action === "download") {
+        pdf.save(fileName);
+        clearSavedProgress();
+
+        const message = document.getElementById("message");
+        message.className = "success";
+        message.textContent = "Induction completed. The PDF has been downloaded.";
+        return;
+    }
 
     const pdfFile =
         new File(
