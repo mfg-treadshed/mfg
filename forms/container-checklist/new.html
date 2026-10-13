@@ -430,6 +430,11 @@ const answerMessages = {
         No: 'The container door must be closed before pick-up.'
     }
 };
+
+const requiredYes = [
+    '3-5', // Question 4.6 - Container clean
+    '3-6'  // Question 4.7 - Doors closed
+];
 const questionNumber = (section, question) => `${section + 1}.${question + 1}`;
 const questionPhotos = (section, question) => state.photos.filter(p => p.section === section && p.question === question);
 const needsPhoto = (section, question) => {
@@ -652,12 +657,25 @@ function validate(step) {
         if (step === 0) $('container').focus();
         return false;
     }
-    for (let i = 0; i < sections[step].questions.length; i++)
-        if (!state.answers[`${step}-${i}`]) {
-            notify('Please answer every question with Yes or No.', true);
-            document.querySelector(`input[name="${step}-${i}"]`).focus();
-            return false
-        }
+    for (let i = 0; i < sections[step].questions.length; i++) {
+    const key = `${step}-${i}`;
+    const answer = state.answers[key];
+
+    if (!answer) {
+        notify(`Please answer question ${questionNumber(step, i)}.`, true);
+        document.querySelector(`input[name="${key}"]`)?.focus();
+        return false;
+    }
+
+    if (requiredYes.includes(key) && answer !== 'Yes') {
+        notify(
+            `Question ${questionNumber(step, i)} requires Yes before you can continue. Please complete the required action.`,
+            true
+        );
+        document.querySelector(`input[name="${key}"][value="Yes"]`)?.focus();
+        return false;
+    }
+}
     for (let i = 0; i < sections[step].questions.length; i++) {
         if (needsPhoto(step, i) && !questionPhotos(step, i).length) {
             notify(`Question ${questionNumber(step, i)} requires at least one photo when the answer is ${photoTriggers[step][i]}.`, true);
@@ -792,12 +810,30 @@ function getLogoData() {
 }
 async function makePdf() {
     if (pending) throw new Error('Please wait for your photos to finish processing.');
+ 
     for (let n = 0; n < sections.length; n++) {
-        for (let i = 0; i < sections[n].questions.length; i++) {
-            if (!state.answers[`${n}-${i}`]) throw new Error(`Please answer question ${questionNumber(n, i)}.`);
-            if (needsPhoto(n, i) && !questionPhotos(n, i).length) throw new Error(`Question ${questionNumber(n, i)} requires at least one photo when the answer is ${photoTriggers[n][i]}. Go back to that section to add a photo.`);
+    for (let i = 0; i < sections[n].questions.length; i++) {
+        const key = `${n}-${i}`;
+        const answer = state.answers[key];
+
+        if (!answer) {
+            throw new Error(`Please answer question ${questionNumber(n, i)}.`);
+        }
+
+        if (requiredYes.includes(key) && answer !== 'Yes') {
+            throw new Error(
+                `Question ${questionNumber(n, i)} must be answered Yes before completing the inspection.`
+            );
+        }
+
+        if (needsPhoto(n, i) && !questionPhotos(n, i).length) {
+            throw new Error(
+                `Question ${questionNumber(n, i)} requires at least one photo. Go back to that section to add a photo.`
+            );
         }
     }
+}
+ 
     renamePhotos();
     state.container = state.container.trim().toUpperCase();
     if (!/^[A-Z]{4}[0-9]{7}$/.test(state.container)) {
