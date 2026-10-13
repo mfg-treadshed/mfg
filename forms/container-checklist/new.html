@@ -547,12 +547,12 @@ function render() {
                        `).join('')}
                    </div>
        
-                   ${message ? `
-                       <div class="message">
-                           <strong>Action required</strong>
-                           <div>${escape(message)}</div>
-                       </div>
-                   ` : ''}
+        ${message ? `
+        <div class="action-required">
+            <strong>⚠️ Action required</strong>
+            <div>${escape(message)}</div>
+        </div>
+    ` : ''}
        
                    ${photoControls(step, i)}
                </fieldset>
