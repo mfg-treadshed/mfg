@@ -461,7 +461,7 @@ function render() {
                     ['date', 'Inspection date', 'date'],
                     ['container', 'Container number', 'text'],
                     ['seal', 'Seal number', 'text']
-                ]) html += `<label class="field">${label}<input type="${type}" id="${id}" value="${escape(state[id])}" required ${id==='container'?'autocapitalize="characters" spellcheck="false" pattern="[A-Za-z]{4}[0-9]{7}" placeholder="ABCD1234567" title="Four letters followed by seven numbers"':id==='seal'?'autocapitalize="characters"':''}></label>`;
+                ]) html += `<label class="field">${label}<input type="${type}" id="${id}" value="${escape(state[id])}" required ${id==='container'?'autocapitalize="characters" spellcheck="false" pattern="[A-Za-z]{4}[0-9]{7}" placeholder="BICU1234567" title="Four letters followed by seven numbers"':id==='seal'?'autocapitalize="characters"':''}></label>`;
             html += '</div>'
         }
         sections[step].questions.forEach((q, i) => {
@@ -542,7 +542,7 @@ function validate(step) {
             }
     }
     if (!/^[A-Z]{4}[0-9]{7}$/.test(state.container)) {
-        notify('Container number must contain four letters followed by seven numbers, for example ABCD1234567.', true);
+        notify('Container number must contain four letters followed by seven numbers, for example BICU1234567.', true);
         if (step === 0) $('container').focus();
         return false;
     }
