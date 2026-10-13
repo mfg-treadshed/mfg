@@ -1,1 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Container Inspection Checklist
+  </title>
+  <meta content="MFG container inspection checklist with Yes/No answers, photos and PDF export." name="description"/>
+  <link rel="icon" href="https://fonts.gstatic.com/s/i/materialicons/check/v1/24px.svg" type="image/svg+xml">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+  </script>
+  <style>
+   * {
+    box-sizing: border-box
+}
 
+body {
+    margin: 0;
+    padding: 20px;
+    background: #f2f4f7;
+    font: 16px Arial, sans-serif;
+    color: #222
+}
+
+main {
+    max-width: 850px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 15px #00000015
+}
+
+.logo {
+    display: block;
+    max-width: 800px;
+    width: 100%;
+    height: auto;
+    margin-bottom: 25px
+}
+
+h1 {
+    font-size: 30px;
+    margin: 0 0 8px
+}
+
+h2 {
+    font-size: 23px;
+    margin: 26px 0 18px
+}
+
+.muted {
+    color: #60656c;
+    font-size: 14px;
+    line-height: 1.5
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 26px 0 8px;
+    font-size: 14px
+}
+
+.bar {
+    height: 8px;
+    background: #e3e5e8;
+    border-radius: 8px;
+    overflow: hidden
+}
+
+.fill {
+    height: 100%;
+    background: #111;
+    transition: width .2s
+}
+
+label.field {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 18px
+}
+
+input[type=text],
+input[type=date],
+textarea {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    margin-top: 8px;
+    border: 1px solid #aeb4bd;
+    border-radius: 6px;
+    font: inherit
+}
+
+textarea {
+    min-height: 85px;
+    resize: vertical
+}
+
+.fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 20px
+}
+
+fieldset {
+    border: 0;
+    background: #f5f6f7;
+    border-radius: 7px;
+    padding: 16px;
+    margin: 0 0 10px;
+    min-width: 0
+}
+
+legend {
+    float: left;
+    width: 100%;
+    line-height: 1.5;
+    margin: 0 0 12px;
+    padding: 0
+}
+
+.choices {
+    display: flex;
+    gap: 10px;
+    clear: both
+}
+
+.choice {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 20px;
+    background: white;
+    border: 1px solid #bac0c8;
+    border-radius: 6px;
+    cursor: pointer;
+    min-height: 46px
+}
+
+.choice:has(input:checked) {
+    background: #111;
+    color: white;
+    border-color: #111
+}
+
+input[type=radio] {
+    width: 18px;
+    height: 18px;
+    accent-color: #555;
+    margin: 0
+}
+
+button,
+.upload {
+    font: inherit;
+    padding: 13px 20px;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #e5e7eb;
+    color: #222;
+    min-height: 46px
+}
+
+button.primary {
+    background: #111;
+    color: white
+}
+
+.nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    flex-wrap: wrap
+}
+
+.nav .primary {
+    margin-left: auto
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: wait
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+.upload:focus-within {
+    outline: 3px solid #3275cb;
+    outline-offset: 3px
+}
+
+.photos {
+    margin: 22px 0
+}
+
+.upload {
+    display: inline-block;
+    margin: 10px 8px 0 0;
+    border: 1px solid #bac0c8;
+    background: white
+}
+
+.upload input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0
+}
+
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 14px
+}
+
+.photo {
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    overflow: hidden
+}
+
+.photo img {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    display: block
+}
+
+.photo button {
+    width: 100%;
+    font-size: 14px;
+    padding: 8px;
+    min-height: 40px
+}
+
+.photo p {
+    padding: 0 10px;
+    overflow-wrap: anywhere;
+    font-size: 14px
+}
+
+.message {
+    padding: 14px;
+    border-radius: 6px;
+    margin-top: 18px;
+    line-height: 1.5;
+    background: #edf2f8
+}
+
+.message.error {
+    background: #ffe8e8;
+    color: #9a1515
+}
+
+.summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #ddd;
+    line-height: 1.5
+}
+
+.summary span {
+    flex: 1
+}
+
+.summary strong {
+    white-space: nowrap
+}
+
+.hidden {
+    display: none
+}
+
+.export {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px
+}
+
+.save {
+    margin-top: 14px
+}
+
+@media(max-width:600px) {
+    body {
+        padding: 10px
+    }
+
+    main {
+        padding: 20px
+    }
+
+    h1 {
+        font-size: 25px
+    }
+
+    .fields {
+        grid-template-columns: 1fr
+    }
+
+    .gallery {
+        grid-template-columns: repeat(2, 1fr)
+    }
+
+    .nav button {
+        flex: 1
+    }
+
+    .summary {
+        font-size: 14px
+    }
+
+    .export button {
+        width: 100%
+    }
+}
+
+@media print {
+
+    .nav,
+    .export,
+    .save,
+    .upload,
+    button {
+        display: none
+    }
+}
+  </style>
+ </head>
+ <body>
+  <main>
+   <img alt="Munro Footwear Group" class="logo" id="companyLogo" src="../logo.png"/>
+   <h1>
+    Container Inspection Checklist
+   </h1>
+   <div class="muted">
+    Treadshed Distribution Centre
+   </div>
+   <div class="progress-label">
+    <span id="stepName">
+    </span>
+    <span id="stepNumber">
+    </span>
+   </div>
+   <div class="bar">
+    <div class="fill" id="progress">
+    </div>
+   </div>
+   <div id="content">
+   </div>
+   <div aria-live="polite" class="message hidden" id="message" role="status">
+   </div>
+   <div class="nav">
+    <button id="back" type="button">
+     Back
+    </button>
+    <button id="reset" type="button">
+     New inspection
+    </button>
+    <button class="primary" id="next" type="button">
+     Next
+    </button>
+   </div>
+   <div aria-live="polite" class="muted save" id="saveStatus">
+    Draft saves on this device. Download the PDF to keep your completed record.
+   </div>
+  </main>
+  <script>
+   'use strict';
+const sections = [{
+    title: 'General Information',
+    questions: ['Is the seal broken or damaged?']
+}, {
+    title: 'Exterior',
+    questions: ['Check all sides for structural damage (dents, holes and repairs). Is there any damage to report from the outside?', 'Are the locks and locking mechanisms secure and reliable?', 'Are the vents visible and free from obstruction?']
+}, {
+    title: 'Ceiling / Roof / Floor',
+    questions: ['Are the support beams visible?', 'Are the ventilation holes present, visible and uncovered?', 'Is the container free from foreign objects mounted to it?', 'Is the container floor flat?', 'Is the container floor of uniform height and free from damage?']
+}, {
+    title: 'Inventory and Unloading Condition',
+    questions: ['Are absorbent moisture pads provided throughout the container?', 'Is the stock presented in PO order, allowing for quick unloading?', 'Are the carton labels facing the front?', 'Was the load inside secured and undamaged?', 'Is the empty container clean and presentable for pick-up?', 'Have the doors been closed properly?']
+}];
+const today = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+};
+const fresh = () => ({
+    step: 0,
+    inspector: '',
+    container: '',
+    seal: '',
+    date: today(),
+    answers: {},
+    notes: {},
+    photos: []
+});
+let state = fresh(),
+    db, pending = 0,
+    exportFile;
+const $ = id => document.getElementById(id),
+    escape = t => String(t).replace(/[&<>"']/g, c => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    } [c]));
+
+function notify(text, error = false) {
+    $('message').textContent = text;
+    $('message').className = 'message' + (error ? ' error' : '')
+}
+
+function clearMessage() {
+    $('message').className = 'message hidden'
+}
+
+function save() {
+    exportFile = null;
+    if (!db) return;
+    try {
+        const tx = db.transaction('draft', 'readwrite');
+        tx.objectStore('draft').put(structuredClone(state), 'current');
+        tx.oncomplete = () => {
+            $('saveStatus').textContent = 'Draft saved on this device. Download the PDF to keep your completed record.'
+        };
+        tx.onerror = () => {
+            $('saveStatus').textContent = 'Draft could not be saved. Keep this page open and download your PDF.'
+        }
+    } catch {
+        $('saveStatus').textContent = 'Draft could not be saved. Keep this page open and download your PDF.'
+    }
+}
+
+function render() {
+    const step = state.step;
+    $('stepName').textContent = step < 4 ? sections[step].title : 'Review & PDF';
+    $('stepNumber').textContent = `Step ${step+1} of 5`;
+    $('progress').style.width = `${(step+1)*20}%`;
+    $('back').hidden = step === 0;
+    $('reset').hidden = step !== 0;
+    $('next').hidden = step === 4;
+    let html = '';
+    if (step < 4) {
+        html = `<h2>Section ${step+1} — ${escape(sections[step].title)}</h2>`;
+        if (step === 0) {
+            html += '<div class="fields">';
+            for (const [id, label, type] of [
+                    ['inspector', 'Inspected by', 'text'],
+                    ['date', 'Inspection date', 'date'],
+                    ['container', 'Container number', 'text'],
+                    ['seal', 'Seal number', 'text']
+                ]) html += `<label class="field">${label}<input type="${type}" id="${id}" value="${escape(state[id])}" required ${id==='container'?'autocapitalize="characters" spellcheck="false" pattern="[A-Za-z]{4}[0-9]{7}" placeholder="BICU1234567" title="Four letters followed by seven numbers"':id==='seal'?'autocapitalize="characters"':''}></label>`;
+            html += '</div>'
+        }
+        sections[step].questions.forEach((q, i) => {
+            const key = `${step}-${i}`;
+            html += `<fieldset><legend>${escape(q)}</legend><div class="choices">${['Yes','No'].map(v=>`<label class="choice"><input type="radio" name="${key}" value="${v}" ${state.answers[key]===v?'checked':''} required>${v}</label>`).join('')}</div></fieldset>`
+        });
+        html += `<label class="field" style="margin-top:22px">Notes (optional)<textarea id="notes">${escape(state.notes[step]||'')}</textarea></label><div class="photos"><strong>Photos (optional)</strong><div class="muted">Add photos for this section. Up to 20 photos per inspection.</div><label class="upload">Upload photos<input type="file" id="upload" accept="image/*" multiple></label><label class="upload">Take photo<input type="file" id="camera" accept="image/*" capture="environment"></label><div class="gallery">${gallery(step)}</div></div>`
+    } else {
+        html = '<h2>Review & PDF</h2><div class="muted">Check your answers before downloading or sharing the inspection.</div>';
+        for (const [label, value] of [
+                ['Inspected by', state.inspector],
+                ['Date', dateDisplay(state.date)],
+                ['Container number', state.container],
+                ['Seal number', state.seal]
+            ]) html += `<div class="summary"><span>${label}</span><strong>${escape(value)}</strong></div>`;
+        sections.forEach((s, n) => {
+            html += `<h2>Section ${n+1} — ${escape(s.title)}</h2>`;
+            s.questions.forEach((q, i) => {
+                html += `<div class="summary"><span>${escape(q)}</span><strong>${escape(state.answers[`${n}-${i}`]||'Unanswered')}</strong></div>`
+            });
+            if (state.notes[n]) html += `<p>${escape(state.notes[n]).replace(/\n/g,'<br>')}</p>`;
+            html += `<div class="gallery">${gallery(n,false)}</div>`
+        });
+        html += '<div class="export"><button id="download" class="primary">Download PDF</button><button id="share">Share PDF</button><button id="finishReset">New inspection</button></div>'
+    }
+    $('content').innerHTML = html;
+    if (step < 4) {
+        for (const id of ['inspector', 'container', 'seal', 'date'])
+            if ($(id)) $(id).oninput = e => {
+                if (id === 'container') {
+                    const start = e.target.selectionStart;
+                    const end = e.target.selectionEnd;
+                    e.target.value = e.target.value.toUpperCase();
+                    if (start !== null) e.target.setSelectionRange(start, end);
+                }
+                state[id] = e.target.value;
+                save()
+            };
+        $('notes').oninput = e => {
+            state.notes[step] = e.target.value;
+            save()
+        };
+        document.querySelectorAll('input[type=radio]').forEach(el => el.onchange = () => {
+            state.answers[el.name] = el.value;
+            save()
+        });
+        $('upload').onchange = e => addPhotos(e.target.files, step);
+        $('camera').onchange = e => addPhotos(e.target.files, step)
+    } else {
+        $('download').onclick = () => exportPdf(false);
+        $('share').onclick = () => exportPdf(true);
+        $('finishReset').onclick = reset
+    }
+    document.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => {
+        state.photos = state.photos.filter(p => p.id !== b.dataset.remove);
+        save();
+        render()
+    })
+}
+
+function gallery(n, remove = true) {
+    return state.photos.filter(p => p.section === n).map(p => `<div class="photo"><img src="${p.data}" alt="${escape(p.name)}"><p>${escape(p.name)}</p>${remove?`<button data-remove="${p.id}" type="button">Remove photo</button>`:''}</div>`).join('')
+}
+
+function dateDisplay(d) {
+    return d ? d.split('-').reverse().join('/') : ''
+}
+
+function validate(step) {
+    state.container = state.container.trim().toUpperCase();
+    if (step === 0) {
+        $('container').value = state.container;
+        for (const id of ['inspector', 'container', 'seal', 'date'])
+            if (!state[id].trim()) {
+                notify('Please enter all general information fields.', true);
+                $(id).focus();
+                return false
+            }
+    }
+    if (!/^[A-Z]{4}[0-9]{7}$/.test(state.container)) {
+        notify('Container number must contain four letters followed by seven numbers, for example BICU1234567.', true);
+        if (step === 0) $('container').focus();
+        return false;
+    }
+    for (let i = 0; i < sections[step].questions.length; i++)
+        if (!state.answers[`${step}-${i}`]) {
+            notify('Please answer every question with Yes or No.', true);
+            document.querySelector(`input[name="${step}-${i}"]`).focus();
+            return false
+        } return true
+}
+$('next').onclick = () => {
+    if (pending) {
+        notify('Please wait for your photos to finish processing.');
+        return
+    }
+    if (validate(state.step)) {
+        state.step++;
+        clearMessage();
+        save();
+        render();
+        window.scrollTo(0, 0)
+    }
+};
+$('back').onclick = () => {
+    state.step--;
+    clearMessage();
+    save();
+    render();
+    window.scrollTo(0, 0)
+};
+$('reset').onclick = reset;
+
+function reset() {
+    if (pending) {
+        notify('Please wait for the photos to finish processing.');
+        return
+    }
+    if (!confirm('Start a new inspection? This clears the current answers and photos on this device. Download the PDF first if you need to keep them.')) return;
+    state = fresh();
+    clearMessage();
+    save();
+    render();
+    window.scrollTo(0, 0)
+}
+async function addPhotos(files, section) {
+    pending++;
+    $('next').disabled = true;
+    const errors = [];
+    for (const file of files) {
+        if (state.photos.length >= 20) {
+            errors.push('The limit is 20 photos per inspection.');
+            break
+        }
+        if (file.size > 25 * 1024 * 1024) {
+            errors.push(`${file.name}: photo exceeds 25 MB.`);
+            continue
+        }
+        try {
+            const data = await imageData(file);
+            state.photos.push({
+                id: crypto.randomUUID(),
+                name: file.name,
+                section,
+                data
+            });
+            save()
+        } catch {
+            errors.push(`${file.name}: could not open this photo. Try a JPEG or PNG.`)
+        }
+    }
+    pending--;
+    $('next').disabled = pending > 0;
+    render();
+    if (errors.length) notify(errors.join(' '), true);
+    else notify('Photos added and included in the PDF.')
+}
+
+function imageData(file) {
+    return new Promise((resolve, reject) => {
+        if (!file.type.startsWith('image/')) return reject();
+        const url = URL.createObjectURL(file),
+            img = new Image();
+        img.onload = () => {
+            try {
+                const ratio = Math.min(1, 1600 / Math.max(img.width, img.height)),
+                    c = document.createElement('canvas');
+                c.width = Math.round(img.width * ratio);
+                c.height = Math.round(img.height * ratio);
+                const ctx = c.getContext('2d');
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, c.width, c.height);
+                ctx.drawImage(img, 0, 0, c.width, c.height);
+                resolve(c.toDataURL('image/jpeg', .82))
+            } catch (e) {
+                reject(e)
+            } finally {
+                URL.revokeObjectURL(url)
+            }
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject()
+        };
+        img.src = url
+    })
+}
+
+function getLogoData() {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                canvas.getContext('2d').drawImage(img, 0, 0);
+                resolve(canvas.toDataURL('image/png'));
+            } catch (error) {
+                reject(error);
+            }
+        };
+        img.onerror = () => reject(new Error('Unable to load ../logo.png. Check that the file is in the parent folder.'));
+        img.src = '../logo.png';
+    });
+}
+async function makePdf() {
+    state.container = state.container.trim().toUpperCase();
+    if (!/^[A-Z]{4}[0-9]{7}$/.test(state.container)) {
+        throw new Error('Container number must contain four letters followed by seven numbers, for example ABCD1234567. Go back to General Information to correct it.');
+    }
+    if (!window.jspdf) throw new Error('PDF tools could not load. Please reload the page and try again.');
+    const logoData = await getLogoData();
+    const doc = new window.jspdf.jsPDF();
+    const properties = doc.getImageProperties(logoData);
+    const logoWidth = 100;
+    const logoHeight = properties.height * logoWidth / properties.width;
+    doc.addImage(logoData, 'PNG', (doc.internal.pageSize.getWidth() - logoWidth) / 2, 12, logoWidth, logoHeight);
+    let y = 12 + logoHeight + 12;
+    const page = () => {
+            doc.addPage();
+            y = 23
+        },
+        room = h => {
+            if (y + h > 275) page()
+        },
+        line = (text, size = 11, bold = false) => {
+            doc.setFont('helvetica', bold ? 'bold' : 'normal');
+            doc.setFontSize(size);
+            const rows = doc.splitTextToSize(text, 174);
+            for (const row of rows) {
+                room(size * .5 + 2);
+                doc.text(row, 18, y);
+                y += size * .5 + 2
+            }
+        };
+    line('Container Inspection Checklist', 19, true);
+    y += 5;
+    for (const [k, v] of [
+            ['Inspected by', state.inspector],
+            ['Inspection date', dateDisplay(state.date)],
+            ['Container number', state.container],
+            ['Seal number', state.seal]
+        ]) line(`${k}: ${v}`);
+    sections.forEach((s, n) => {
+        y += 8;
+        room(25);
+        line(`Section ${n+1} - ${s.title}`, 14, true);
+        s.questions.forEach((q, i) => {
+            y += 3;
+            line(`${q}  ${state.answers[`${n}-${i}`]}`)
+        });
+        if (state.notes[n]) {
+            y += 5;
+            line('Notes', 11, true);
+            line(state.notes[n])
+        }
+        state.photos.filter(p => p.section === n).forEach((p, i) => {
+            const prop = doc.getImageProperties(p.data);
+            const scale = Math.min(174 / prop.width, 110 / prop.height),
+                w = prop.width * scale,
+                h = prop.height * scale;
+            room(h + 23);
+            y += 5;
+            line(`Photo ${i+1}: ${p.name}`, 10);
+            doc.addImage(p.data, 'JPEG', 18, y, w, h);
+            y += h + 5
+        })
+    });
+    const total = doc.getNumberOfPages();
+    for (let i = 1; i <= total; i++) {
+        doc.setPage(i);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(90);
+        doc.text(`Container Inspection Checklist | Page ${i} of ${total}`, 192, 287, {
+            align: 'right'
+        })
+    }
+    const safe = state.container.replace(/[^a-zA-Z0-9_-]/g, '_') || 'container';
+    return new File([doc.output('blob')], `Container_Inspection_${safe}_${state.date}.pdf`, {
+        type: 'application/pdf'
+    })
+}
+
+function download(file) {
+    const url = URL.createObjectURL(file),
+        a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 60000)
+}
+async function exportPdf(share) {
+    const buttons = [$('download'), $('share')];
+    if (buttons.some(b => b?.disabled)) return;
+    buttons.forEach(b => {
+        if (b) b.disabled = true
+    });
+    try {
+        exportFile ||= await makePdf();
+        if (share && navigator.canShare?.({
+                files: [exportFile]
+            })) {
+            await navigator.share({
+                files: [exportFile],
+                title: 'Container Inspection Checklist'
+            });
+            notify('PDF shared.')
+        } else {
+            download(exportFile);
+            notify(share ? 'File sharing is unavailable in this browser. The PDF has been downloaded; attach it to your email.' : 'PDF downloaded, including your answers, notes and photos.')
+        }
+    } catch (e) {
+        if (e.name !== 'AbortError') notify(e.message || 'Could not create the PDF. Please try again.', true)
+    } finally {
+        buttons.forEach(b => {
+            if (b) b.disabled = false
+        })
+    }
+}
+render();
+try {
+    const request = indexedDB.open('mfgContainerInspection', 1);
+    request.onupgradeneeded = () => request.result.createObjectStore('draft');
+    request.onsuccess = () => {
+        db = request.result;
+        const r = db.transaction('draft').objectStore('draft').get('current');
+        r.onsuccess = () => {
+            if (r.result) {
+                state = r.result;
+                state.step = Math.max(0, Math.min(4, state.step || 0));
+                render();
+                $('saveStatus').textContent = 'Saved draft restored on this device.'
+            }
+        }
+    };
+    request.onerror = () => {
+        $('saveStatus').textContent = 'Saving is unavailable in this browser. Keep this page open and download your PDF.'
+    }
+} catch {
+    $('saveStatus').textContent = 'Saving is unavailable. Keep this page open and download your PDF.'
+}
+if (document.modelContext?.registerTool) {
+    try {
+        Promise.resolve(document.modelContext.registerTool({
+            name: 'read_container_inspection',
+            description: 'Read the current container inspection draft and answer progress.',
+            inputSchema: {
+                type: 'object',
+                properties: {},
+                additionalProperties: false
+            },
+            annotations: {
+                readOnlyHint: true,
+                untrustedContentHint: true
+            },
+            execute: () => ({
+                inspector: state.inspector,
+                container: state.container,
+                seal: state.seal,
+                date: state.date,
+                answers: state.answers,
+                photoCount: state.photos.length,
+                section: state.step + 1
+            })
+        })).catch(() => {})
+    } catch {}
+}
+  </script>
+ </body>
+</html>
