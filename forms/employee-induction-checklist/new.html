@@ -266,6 +266,29 @@ canvas {
     cursor: pointer;
 }
 
+.induction-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 35px;
+}
+
+.induction-actions button {
+    width: auto;
+    margin: 0;
+    padding: 14px 20px;
+    border: 0;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.induction-actions button:nth-child(n + 2) {
+    background: #e4e7ec;
+    color: #222;
+}
+
 /* MESSAGE */
 
 #message {
@@ -958,6 +981,8 @@ canvas {
 
     </button>
 
+    <div class="induction-actions">
+
     <button
         class="complete-button"
         type="button"
@@ -984,6 +1009,8 @@ canvas {
         Start New Induction
 
     </button>
+
+    </div>
 
     <div id="message"></div>
 
