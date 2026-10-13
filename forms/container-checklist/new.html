@@ -409,10 +409,17 @@ const sections = [{
 const photoTriggers = [['Yes'], 
                        ['Yes', 'No', 'No'], 
                        ['No', 'No', 'No', 'No', 'No'], 
-                       ['No', 'No', 'No', 'No', 'No', 'Yes', 'Yes']];
+                       ['No', 'No', 'No', 'No', 'No', 'Both', 'Yes']];
 const questionNumber = (section, question) => `${section + 1}.${question + 1}`;
 const questionPhotos = (section, question) => state.photos.filter(p => p.section === section && p.question === question);
-const needsPhoto = (section, question) => state.answers[`${section}-${question}`] === photoTriggers[section][question];
+const needsPhoto = (section, question) => {
+    const answer = state.answers[`${section}-${question}`];
+    const trigger = photoTriggers[section][question];
+
+    return trigger === 'Both' && (answer === 'Yes' || answer === 'No')
+        || answer === trigger;
+};
+
 function renamePhotos() {
     sections.forEach((section, n) => section.questions.forEach((q, i) => {
         questionPhotos(n, i).forEach((p, index) => {
