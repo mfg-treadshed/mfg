@@ -961,9 +961,27 @@ canvas {
     <button
         class="complete-button"
         type="button"
-        onclick="completeInduction()">
+        onclick="completeInduction('download')">
 
-        Complete & Email Induction
+        Download PDF
+
+    </button>
+
+    <button
+        class="complete-button"
+        type="button"
+        onclick="completeInduction('share')">
+
+        Share PDF
+
+    </button>
+
+    <button
+        class="new-induction-button"
+        type="button"
+        onclick="startNewInduction()">
+
+        Start New Induction
 
     </button>
 
@@ -1718,7 +1736,7 @@ function addPDFItem(pdf, text, y) {
    COMPLETE INDUCTION
 ===================================================== */
 
-async function completeInduction() {
+async function completeInduction(action) {
 
     /* CHECK ALL STAGES */
 
@@ -2161,6 +2179,16 @@ async function completeInduction() {
         "_Employee_Induction_" +
         date +
         ".pdf";
+
+    if (action === "download") {
+        pdf.save(fileName);
+        clearSavedProgress();
+
+        const message = document.getElementById("message");
+        message.className = "success";
+        message.textContent = "Induction completed. The PDF has been downloaded.";
+        return;
+    }
 
     const pdfFile =
         new File(
