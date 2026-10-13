@@ -412,6 +412,8 @@ const today = () => {
 };
 const fresh = () => ({
     step: 0,
+    startedAt: new Date().toISOString(),
+    finishedAt: null,
     inspector: '',
     container: '',
     seal: '',
@@ -467,7 +469,7 @@ function render() {
     $('next').hidden = step === 4;
     let html = '';
     if (step < 4) {
-        html = `<h2>Section ${step+1} — ${escape(sections[step].title)}</h2>`;
+        html = `<h2>Section ${step+1} — ${escape(sections[step].title)}</h2><div class="muted">Started: ${escape(dateTimeDisplay(state.startedAt))}</div>`;
         if (step === 0) {
             html += '<div class="fields">';
             for (const [id, label, type] of [
@@ -489,7 +491,10 @@ function render() {
                 ['Inspected by', state.inspector],
                 ['Date', dateDisplay(state.date)],
                 ['Container number', state.container],
-                ['Seal number', state.seal]
+                ['Seal number', state.seal],
+                ['Started', dateTimeDisplay(state.startedAt)],
+                ['Finished', dateTimeDisplay(state.finishedAt)],
+                ['Time taken', inspectionDuration()]
             ]) html += `<div class="summary"><span>${label}</span><strong>${escape(value)}</strong></div>`;
         sections.forEach((s, n) => {
             html += `<h2>Section ${n+1} — ${escape(s.title)}</h2>`;
@@ -538,6 +543,18 @@ function gallery(n, remove = true, question = null) {
     return state.photos.filter(p => p.section === n && (question === null || p.question === question)).map(p => `<div class="photo"><img src="${p.data}" alt="${escape(p.name)}"><p>${escape(p.name)}</p>${remove?`<button data-remove="${p.id}" type="button">Remove photo</button>`:''}</div>`).join('')
 }
 
+function dateTimeDisplay(value) {
+    if (!value) return 'Not recorded';
+    const date = new Date(value);
+    return date.toLocaleDateString('en-AU') + ' ' + date.toLocaleTimeString('en-AU', { hour12: false });
+}
+
+function inspectionDuration() {
+    if (!state.startedAt || !state.finishedAt) return 'Not recorded';
+    const minutes = Math.max(0, Math.floor((new Date(state.finishedAt) - new Date(state.startedAt)) / 60000));
+    return `${Math.floor(minutes / 60)} hours ${minutes % 60} minutes`;
+}
+
 function dateDisplay(d) {
     return d ? d.split('-').reverse().join('/') : ''
 }
@@ -580,6 +597,7 @@ $('next').onclick = () => {
     }
     if (validate(state.step)) {
         state.step++;
+        if (state.step === 4) state.finishedAt = new Date().toISOString();
         clearMessage();
         save();
         render();
@@ -587,6 +605,7 @@ $('next').onclick = () => {
     }
 };
 $('back').onclick = () => {
+    if (state.step === 4) state.finishedAt = null;
     state.step--;
     clearMessage();
     save();
@@ -738,7 +757,10 @@ async function makePdf() {
             ['Inspected by', state.inspector],
             ['Inspection date', dateDisplay(state.date)],
             ['Container number', state.container],
-            ['Seal number', state.seal]
+            ['Seal number', state.seal],
+            ['Started', dateTimeDisplay(state.startedAt)],
+            ['Finished', dateTimeDisplay(state.finishedAt)],
+            ['Time taken', inspectionDuration()]
         ]) line(`${k}: ${v}`);
     sections.forEach((s, n) => {
         if (n > 0) page();
