@@ -383,15 +383,32 @@ const sections = [{
     questions: ['Is the seal broken or damaged?']
 }, {
     title: 'Exterior',
-    questions: ['Check all sides for structural damage (dents, holes and repairs). Is there any damage to report from the outside?', 'Are the locks and locking mechanisms secure and reliable?', 'Are the vents visible and free from obstruction?']
+    questions: ['Check all sides for structural damage (dents, holes and repairs). Is there any damage to report from the outside?',
+                'Are the locks and locking mechanisms secure and reliable?',
+                'Are the vents visible and free from obstruction?'
+               ]
 }, {
     title: 'Ceiling / Roof / Floor',
-    questions: ['Are the support beams visible?', 'Are the ventilation holes present, visible and uncovered?', 'Is the container free from foreign objects mounted to it?', 'Is the container floor flat?', 'Is the container floor of uniform height and free from damage?']
+    questions: ['Are the support beams visible?',
+                'Are the ventilation holes present, visible and uncovered?',
+                'Is the container free from foreign objects mounted to it?',
+                'Is the container floor flat?',
+                'Is the container floor of uniform height and free from damage?'
+               ]
 }, {
     title: 'Inventory and Unloading Condition',
-    questions: ['Test', 'Is there netting?', 'Are absorbent moisture pads provided throughout the container?', 'Is the stock presented in PO order, allowing for quick unloading?', 'Are the carton labels facing the front?', 'Was the load inside secured and undamaged?', 'Is the empty container clean and presentable for pick-up?', 'Have the doors been closed properly?']
+    questions: ['Are absorbent moisture pads provided throughout the container?', 
+                'Is the stock presented in PO order, allowing for quick unloading?', 
+                'Are the carton labels facing the front?', 
+                'Was the load inside secured and undamaged?', 
+                'Is the empty container clean and presentable for pick-up?', 
+                'Have the doors been closed properly?'
+               ]
 }];
-const photoTriggers = [['Yes'], ['Yes', 'No', 'No'], ['No', 'No', 'No', 'No', 'No'], ['No', 'No', 'No', 'No', 'Yes', 'Yes']];
+const photoTriggers = [['Yes'], 
+                       ['Yes', 'No', 'No'], 
+                       ['No', 'No', 'No', 'No', 'No'], 
+                       ['No', 'No', 'No', 'No', 'Yes', 'Yes']];
 const questionNumber = (section, question) => `${section + 1}.${question + 1}`;
 const questionPhotos = (section, question) => state.photos.filter(p => p.section === section && p.question === question);
 const needsPhoto = (section, question) => state.answers[`${section}-${question}`] === photoTriggers[section][question];
