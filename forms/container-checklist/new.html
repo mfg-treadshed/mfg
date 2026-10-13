@@ -426,6 +426,9 @@ const answerMessages = {
     '3-5': {
         No: 'The container must be cleaned and made presentable before pick-up.'
     }
+    '3-6': {
+        No: 'The container door must be closed before pick-up.'
+    }
 };
 const questionNumber = (section, question) => `${section + 1}.${question + 1}`;
 const questionPhotos = (section, question) => state.photos.filter(p => p.section === section && p.question === question);
