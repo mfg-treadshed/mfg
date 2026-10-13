@@ -397,7 +397,8 @@ const sections = [{
                ]
 }, {
     title: 'Inventory and Unloading Condition',
-    questions: ['Are absorbent moisture pads provided throughout the container?', 
+    questions: ['Is container netting present?',
+                'Are absorbent moisture pads provided throughout the container?', 
                 'Is the stock presented in PO order, allowing for quick unloading?', 
                 'Are the carton labels facing the front?', 
                 'Was the load inside secured and undamaged?', 
@@ -408,7 +409,7 @@ const sections = [{
 const photoTriggers = [['Yes'], 
                        ['Yes', 'No', 'No'], 
                        ['No', 'No', 'No', 'No', 'No'], 
-                       ['No', 'No', 'No', 'No', 'Yes', 'Yes']];
+                       ['No', 'No', 'No', 'No', 'No', 'Yes', 'Yes']];
 const questionNumber = (section, question) => `${section + 1}.${question + 1}`;
 const questionPhotos = (section, question) => state.photos.filter(p => p.section === section && p.question === question);
 const needsPhoto = (section, question) => state.answers[`${section}-${question}`] === photoTriggers[section][question];
