@@ -336,6 +336,17 @@ textarea:focus-visible,
         display: none
     }
 }
+
+.action-required {
+    background: #ffe5e5;
+    color: #a40000;
+    border: 1px solid #e53935;
+    border-left: 5px solid #e53935;
+    border-radius: 6px;
+    padding: 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+}
   </style>
  </head>
  <body>
@@ -383,18 +394,57 @@ const sections = [{
     questions: ['Is the seal broken or damaged?']
 }, {
     title: 'Exterior',
-    questions: ['Check all sides for structural damage (dents, holes and repairs). Is there any damage to report from the outside?', 'Are the locks and locking mechanisms secure and reliable?', 'Are the vents visible and free from obstruction?']
+    questions: ['Check all sides for structural damage (dents, holes and repairs). Is there any damage to report from the outside?',
+                'Are the locks and locking mechanisms secure and reliable?',
+                'Are the vents visible and free from obstruction?'
+               ]
 }, {
     title: 'Ceiling / Roof / Floor',
-    questions: ['Are the support beams visible?', 'Are the ventilation holes present, visible and uncovered?', 'Is the container free from foreign objects mounted to it?', 'Is the container floor flat?', 'Is the container floor of uniform height and free from damage?']
+    questions: ['Are the support beams visible?',
+                'Are the ventilation holes present, visible and uncovered?',
+                'Is the container free from foreign objects mounted to it?',
+                'Is the container floor flat?',
+                'Is the container floor of uniform height and free from damage?'
+               ]
 }, {
     title: 'Inventory and Unloading Condition',
-    questions: ['Are absorbent moisture pads provided throughout the container?', 'Is the stock presented in PO order, allowing for quick unloading?', 'Are the carton labels facing the front?', 'Was the load inside secured and undamaged?', 'Is the empty container clean and presentable for pick-up?', 'Have the doors been closed properly?']
+    questions: ['Is container netting present?',
+                'Are absorbent moisture pads provided throughout the container?', 
+                'Is the stock presented in PO order, allowing for quick unloading?', 
+                'Are the carton labels facing the front?', 
+                'Was the load inside secured and undamaged?', 
+                'Is the empty container clean and presentable for pick-up?', 
+                'Have the doors been closed properly?'
+               ]
 }];
-const photoTriggers = [['Yes'], ['Yes', 'No', 'No'], ['No', 'No', 'No', 'No', 'No'], ['No', 'No', 'No', 'No', 'Yes', 'Yes']];
+const photoTriggers = [['Yes'], 
+                       ['Yes', 'No', 'No'], 
+                       ['No', 'No', 'No', 'No', 'No'], 
+                       ['No', 'No', 'No', 'No', 'No', 'Yes', 'Yes']];
+
+const answerMessages = {
+    '3-5': {
+        No: 'The container must be cleaned and made presentable before pick-up.'
+    },
+    '3-6': {
+        No: 'The container door must be closed before pick-up.'
+    }
+};
+
+const requiredYes = [
+    '3-5', // Question 4.6 - Container clean
+    '3-6'  // Question 4.7 - Doors closed
+];
 const questionNumber = (section, question) => `${section + 1}.${question + 1}`;
 const questionPhotos = (section, question) => state.photos.filter(p => p.section === section && p.question === question);
-const needsPhoto = (section, question) => state.answers[`${section}-${question}`] === photoTriggers[section][question];
+const needsPhoto = (section, question) => {
+    const answer = state.answers[`${section}-${question}`];
+    const trigger = photoTriggers[section][question];
+
+    return trigger === 'Both' && (answer === 'Yes' || answer === 'No')
+        || answer === trigger;
+};
+
 function renamePhotos() {
     sections.forEach((section, n) => section.questions.forEach((q, i) => {
         questionPhotos(n, i).forEach((p, index) => {
@@ -481,9 +531,41 @@ function render() {
             html += '</div>'
         }
         sections[step].questions.forEach((q, i) => {
-            const key = `${step}-${i}`;
-            html += `<fieldset><legend>${questionNumber(step, i)} ${escape(q)}</legend><div class="choices">${['Yes','No'].map(v=>`<label class="choice"><input type="radio" name="${key}" value="${v}" ${state.answers[key]===v?'checked':''} required>${v}</label>`).join('')}</div>${photoControls(step, i)}</fieldset>`
-        });
+           const key = `${step}-${i}`;
+           const answer = state.answers[key];
+       
+           const message = answerMessages[key]?.[answer];
+       
+           html += `
+               <fieldset>
+                   <legend>${questionNumber(step, i)} ${escape(q)}</legend>
+       
+                   <div class="choices">
+                       ${['Yes', 'No'].map(v => `
+                           <label class="choice">
+                               <input
+                                   type="radio"
+                                   name="${key}"
+                                   value="${v}"
+                                   ${answer === v ? 'checked' : ''}
+                                   required
+                               >
+                               ${v}
+                           </label>
+                       `).join('')}
+                   </div>
+       
+        ${message ? `
+        <div class="action-required">
+            <strong>⚠️ Action required</strong>
+            <div>${escape(message)}</div>
+        </div>
+    ` : ''}
+       
+                   ${photoControls(step, i)}
+               </fieldset>
+           `;
+    });
 
     } else {
         html = '<h2>Review & PDF</h2><div class="muted">Check your answers before downloading or sharing the inspection.</div>';
@@ -575,12 +657,25 @@ function validate(step) {
         if (step === 0) $('container').focus();
         return false;
     }
-    for (let i = 0; i < sections[step].questions.length; i++)
-        if (!state.answers[`${step}-${i}`]) {
-            notify('Please answer every question with Yes or No.', true);
-            document.querySelector(`input[name="${step}-${i}"]`).focus();
-            return false
-        }
+    for (let i = 0; i < sections[step].questions.length; i++) {
+    const key = `${step}-${i}`;
+    const answer = state.answers[key];
+
+    if (!answer) {
+        notify(`Please answer question ${questionNumber(step, i)}.`, true);
+        document.querySelector(`input[name="${key}"]`)?.focus();
+        return false;
+    }
+
+    if (requiredYes.includes(key) && answer !== 'Yes') {
+        notify(
+            `Question ${questionNumber(step, i)} requires Yes before you can continue. Please complete the required action.`,
+            true
+        );
+        document.querySelector(`input[name="${key}"][value="Yes"]`)?.focus();
+        return false;
+    }
+}
     for (let i = 0; i < sections[step].questions.length; i++) {
         if (needsPhoto(step, i) && !questionPhotos(step, i).length) {
             notify(`Question ${questionNumber(step, i)} requires at least one photo when the answer is ${photoTriggers[step][i]}.`, true);
@@ -715,12 +810,30 @@ function getLogoData() {
 }
 async function makePdf() {
     if (pending) throw new Error('Please wait for your photos to finish processing.');
+ 
     for (let n = 0; n < sections.length; n++) {
-        for (let i = 0; i < sections[n].questions.length; i++) {
-            if (!state.answers[`${n}-${i}`]) throw new Error(`Please answer question ${questionNumber(n, i)}.`);
-            if (needsPhoto(n, i) && !questionPhotos(n, i).length) throw new Error(`Question ${questionNumber(n, i)} requires at least one photo when the answer is ${photoTriggers[n][i]}. Go back to that section to add a photo.`);
+    for (let i = 0; i < sections[n].questions.length; i++) {
+        const key = `${n}-${i}`;
+        const answer = state.answers[key];
+
+        if (!answer) {
+            throw new Error(`Please answer question ${questionNumber(n, i)}.`);
+        }
+
+        if (requiredYes.includes(key) && answer !== 'Yes') {
+            throw new Error(
+                `Question ${questionNumber(n, i)} must be answered Yes before completing the inspection.`
+            );
+        }
+
+        if (needsPhoto(n, i) && !questionPhotos(n, i).length) {
+            throw new Error(
+                `Question ${questionNumber(n, i)} requires at least one photo. Go back to that section to add a photo.`
+            );
         }
     }
+}
+ 
     renamePhotos();
     state.container = state.container.trim().toUpperCase();
     if (!/^[A-Z]{4}[0-9]{7}$/.test(state.container)) {
