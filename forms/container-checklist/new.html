@@ -591,12 +591,16 @@ function render() {
     if (step < 4) {
         for (const id of ['inspector', 'container', 'seal', 'date'])
             if ($(id)) $(id).oninput = e => {
-                if (id === 'container') {
-                    const start = e.target.selectionStart;
-                    const end = e.target.selectionEnd;
-                    e.target.value = e.target.value.toUpperCase();
-                    if (start !== null) e.target.setSelectionRange(start, end);
-                }
+                if (id === 'container' || id === 'seal') {
+                  const start = e.target.selectionStart;
+                  const end = e.target.selectionEnd;
+              
+                  e.target.value = e.target.value.toUpperCase();
+              
+                  if (start !== null) {
+                      e.target.setSelectionRange(start, end);
+                  }
+            }
                 state[id] = e.target.value;
                 save()
             };
