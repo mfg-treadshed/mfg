@@ -647,6 +647,7 @@ function dateDisplay(d) {
 
 function validate(step) {
     state.container = state.container.trim().toUpperCase();
+    state.seal = state.seal.trim().toUpperCase();
     if (step === 0) {
         $('container').value = state.container;
         for (const id of ['inspector', 'container', 'seal', 'date'])
@@ -840,6 +841,7 @@ async function makePdf() {
  
     renamePhotos();
     state.container = state.container.trim().toUpperCase();
+    state.seal = state.seal.trim().toUpperCase();
     if (!/^[A-Z]{4}[0-9]{7}$/.test(state.container)) {
         throw new Error('Container number must contain four letters followed by seven numbers, for example ABCD1234567. Go back to General Information to correct it.');
     }
