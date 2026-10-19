@@ -917,7 +917,7 @@ async function makePdf() {
         })
     }
     const safe = state.container.replace(/[^a-zA-Z0-9_-]/g, '_') || 'container';
-    return new File([doc.output('blob')], `Container_Inspection_${safe}_${state.date}.pdf`, {
+    return new File([doc.output('blob')], `Container_Inspection_${state.date}_${safe}.pdf`, {
         type: 'application/pdf'
     })
 }
