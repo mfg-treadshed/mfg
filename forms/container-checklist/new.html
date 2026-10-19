@@ -943,7 +943,7 @@ async function exportPdf(share) {
             })) {
             await navigator.share({
                 files: [exportFile],
-                title: 'Container Inspection Checklist'
+                title: `Container Inspection Checklist - ${state.container}`
             });
             notify('PDF shared.')
         } else {
